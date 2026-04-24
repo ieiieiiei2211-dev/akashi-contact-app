@@ -20,6 +20,9 @@ export class MessagesService {
       where: {
         status: MessageStatus.SENT,
       },
+      include: {
+        readStatuses: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },

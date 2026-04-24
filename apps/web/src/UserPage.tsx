@@ -1,7 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 
 type MessageStatus = 'DRAFT' | 'SENT';
+
+type ReadStatus = {
+  id: number;
+  messageId: number;
+  userId: number;
+  readAt: string;
+};
 
 type Message = {
   id: number;
@@ -10,28 +17,51 @@ type Message = {
   status: MessageStatus;
   createdAt: string;
   updatedAt: string;
+  readStatuses?: ReadStatus[];
+};
+
+type User = {
+  id: number;
+  name: string;
+  email: string;
 };
 
 function UserPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [confirmedIds, setConfirmedIds] = useState<number[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  async function fetchCurrentUser() {
+    const response = await fetch('http://localhost:3000/users');
+
+    if (!response.ok) {
+      throw new Error('\u30e6\u30fc\u30b6\u30fc\u60c5\u5831\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+    }
+
+    const users: User[] = await response.json();
+    setCurrentUser(users[0] ?? null);
+  }
+
   async function fetchSentMessages() {
+    const response = await fetch('http://localhost:3000/messages/sent');
+
+    if (!response.ok) {
+      throw new Error('\u9023\u7d61\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+    }
+
+    const data: Message[] = await response.json();
+    setMessages(data);
+  }
+
+  async function fetchInitialData() {
     setLoading(true);
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/messages/sent');
-
-      if (!response.ok) {
-        throw new Error('\u9023\u7d61\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
-      }
-
-      const data: Message[] = await response.json();
-      setMessages(data);
+      await fetchCurrentUser();
+      await fetchSentMessages();
     } catch (err) {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     } finally {
@@ -40,16 +70,54 @@ function UserPage() {
   }
 
   useEffect(() => {
-    fetchSentMessages();
+    fetchInitialData();
   }, []);
 
-  function handleConfirm(messageId: number) {
-    if (!confirmedIds.includes(messageId)) {
-      setConfirmedIds([...confirmedIds, messageId]);
+  function isConfirmed(message: Message) {
+    if (!currentUser) {
+      return false;
     }
+
+    return Boolean(
+      message.readStatuses?.some((readStatus) => readStatus.userId === currentUser.id),
+    );
   }
 
-  const unreadCount = messages.filter((message) => !confirmedIds.includes(message.id)).length;
+  const confirmedCount = useMemo(
+    () => messages.filter((message) => isConfirmed(message)).length,
+    [messages, currentUser],
+  );
+
+  const unreadCount = messages.length - confirmedCount;
+
+  async function handleConfirm(message: Message) {
+    if (!currentUser) {
+      setError('\u78ba\u8a8d\u7528\u306e\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc\u304c\u3042\u308a\u307e\u305b\u3093');
+      return;
+    }
+
+    setError('');
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}/read`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('\u958b\u5c01\u78ba\u8a8d\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+      }
+
+      await fetchSentMessages();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    }
+  }
 
   return (
     <main className="akashi-user-shell">
@@ -79,6 +147,11 @@ function UserPage() {
               <p className="akashi-hero-label">{'\u660e\u77f3\u5de5\u696d\u9ad8\u7b49\u5c02\u9580\u5b66\u6821'}</p>
               <h1>{'\u5b66\u6821\u304b\u3089\u306e\u9023\u7d61'}</h1>
               <p>{'\u9001\u4fe1\u6e08\u307f\u306e\u9023\u7d61\u3060\u3051\u3092\u8868\u793a\u3057\u3066\u3044\u307e\u3059\u3002'}</p>
+              {currentUser && (
+                <p className="akashi-user-name">
+                  {'\u8868\u793a\u4e2d\u306e\u30e6\u30fc\u30b6\u30fc\uff1a'}{currentUser.name}
+                </p>
+              )}
             </div>
 
             <div className="akashi-count-panel">
@@ -94,9 +167,9 @@ function UserPage() {
             </div>
             <div>
               <span>{'\u78ba\u8a8d\u6e08\u307f'}</span>
-              <strong>{confirmedIds.length}</strong>
+              <strong>{confirmedCount}</strong>
             </div>
-            <button type="button" onClick={fetchSentMessages}>
+            <button type="button" onClick={fetchInitialData}>
               {'\u66f4\u65b0'}
             </button>
           </section>
@@ -107,7 +180,7 @@ function UserPage() {
           {!loading && !error && (
             <div className="akashi-message-stack">
               {messages.map((message) => {
-                const confirmed = confirmedIds.includes(message.id);
+                const confirmed = isConfirmed(message);
 
                 return (
                   <button
@@ -162,7 +235,7 @@ function UserPage() {
           <section className="akashi-confirm-box">
             <p>{'\u5185\u5bb9\u3092\u78ba\u8a8d\u3057\u305f\u3089\u62bc\u3057\u3066\u304f\u3060\u3055\u3044'}</p>
 
-            {confirmedIds.includes(selectedMessage.id) ? (
+            {isConfirmed(selectedMessage) ? (
               <button type="button" className="akashi-confirm-button done">
                 {'\u78ba\u8a8d\u6e08\u307f'}
               </button>
@@ -170,7 +243,7 @@ function UserPage() {
               <button
                 type="button"
                 className="akashi-confirm-button"
-                onClick={() => handleConfirm(selectedMessage.id)}
+                onClick={() => handleConfirm(selectedMessage)}
               >
                 {'\u78ba\u8a8d\u3057\u307e\u3057\u305f'}
               </button>

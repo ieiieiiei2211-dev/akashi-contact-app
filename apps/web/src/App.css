@@ -1524,3 +1524,14 @@ textarea:focus {
   color: #0b3f75;
   background: #e7f1fb;
 }
+.akashi-user-name {
+  margin-top: 10px;
+  color: #0b3f75;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.akashi-error {
+  color: #dc2626;
+  font-weight: 900;
+}
