@@ -292,6 +292,53 @@ function AdminPage() {
     }
   }
 
+  async function handleEditDraftMessage(message: Message) {
+    if (message.status !== 'DRAFT') {
+      setError('\u9001\u4fe1\u6e08\u307f\u306e\u9023\u7d61\u306f\u7de8\u96c6\u3067\u304d\u307e\u305b\u3093');
+      return;
+    }
+
+    const nextTitle = window.prompt('\u30bf\u30a4\u30c8\u30eb\u3092\u7de8\u96c6', message.title);
+    if (nextTitle === null) {
+      return;
+    }
+
+    const nextBody = window.prompt('\u672c\u6587\u3092\u7de8\u96c6', message.body);
+    if (nextBody === null) {
+      return;
+    }
+
+    setNotice('');
+    setError('');
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: nextTitle,
+          body: nextBody,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage =
+          typeof errorData.message === 'string'
+            ? errorData.message
+            : '\u9023\u7d61\u306e\u7de8\u96c6\u306b\u5931\u6557\u3057\u307e\u3057\u305f';
+
+        throw new Error(errorMessage);
+      }
+
+      setNotice('\u4e0b\u66f8\u304d\u9023\u7d61\u3092\u7de8\u96c6\u3057\u307e\u3057\u305f');
+      await fetchMessages();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    }
+  }
   async function handleSendMessage(message: Message) {
     const ok = window.confirm(`${message.title} \u3092\u9001\u4fe1\u6e08\u307f\u306b\u3057\u307e\u3059\u304b\uff1f`);
 
@@ -581,13 +628,23 @@ function AdminPage() {
                     </button>
 
                     {message.status === 'DRAFT' && (
-                      <button
-                        type="button"
-                        className="send-button"
-                        onClick={() => handleSendMessage(message)}
-                      >
-                        {'\u9001\u4fe1'}
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="edit-button"
+                          onClick={() => handleEditDraftMessage(message)}
+                        >
+                          {'\u7de8\u96c6'}
+                        </button>
+
+                        <button
+                          type="button"
+                          className="send-button"
+                          onClick={() => handleSendMessage(message)}
+                        >
+                          {'\u9001\u4fe1'}
+                        </button>
+                      </>
                     )}
 
                     <button

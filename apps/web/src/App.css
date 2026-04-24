@@ -1737,3 +1737,18 @@ textarea:focus {
   color: #0b3f75;
   font-size: 14px;
 }
+
+.edit-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #92400e;
+  background: #fef3c7;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.edit-button:hover {
+  background: #fde68a;
+}
