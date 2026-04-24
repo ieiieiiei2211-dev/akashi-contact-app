@@ -17,6 +17,11 @@ export class MessagesController {
     return this.messagesService.findSent();
   }
 
+  @Get(':id/read-status')
+  getReadStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.messagesService.getReadStatus(id);
+  }
+
   @Post()
   create(@Body() createMessageDto: CreateMessageDto) {
     return this.messagesService.create(createMessageDto);

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { MessageStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -66,6 +66,69 @@ export class MessagesService {
         userId,
       },
     });
+  }
+
+  async getReadStatus(id: number) {
+    const message = await this.prisma.message.findUnique({
+      where: { id },
+      include: {
+        readStatuses: {
+          include: {
+            user: true,
+          },
+          orderBy: {
+            readAt: 'desc',
+          },
+        },
+      },
+    });
+
+    if (!message) {
+      throw new NotFoundException('連絡が見つかりません');
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        isActive: true,
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
+
+    const readUserIds = new Set(
+      message.readStatuses.map((readStatus) => readStatus.userId),
+    );
+
+    const readUsers = message.readStatuses.map((readStatus) => ({
+      id: readStatus.user.id,
+      name: readStatus.user.name,
+      email: readStatus.user.email,
+      role: readStatus.user.role,
+      readAt: readStatus.readAt,
+    }));
+
+    const unreadUsers = users
+      .filter((user) => !readUserIds.has(user.id))
+      .map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      }));
+
+    return {
+      message: {
+        id: message.id,
+        title: message.title,
+        status: message.status,
+        createdAt: message.createdAt,
+      },
+      readCount: readUsers.length,
+      unreadCount: unreadUsers.length,
+      readUsers,
+      unreadUsers,
+    };
   }
 
   remove(id: number) {
