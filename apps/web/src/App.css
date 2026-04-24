@@ -1842,3 +1842,39 @@ textarea:focus {
 .target-preview-more {
   margin: 0;
 }
+
+.message-filter-bar {
+  display: grid;
+  grid-template-columns: 1fr 180px auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.message-filter-bar label {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.message-filter-bar p {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: #1e3a8a;
+  background: #dbeafe;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .message-filter-bar {
+    grid-template-columns: 1fr;
+  }
+}

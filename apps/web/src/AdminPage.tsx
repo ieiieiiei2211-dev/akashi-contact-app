@@ -100,6 +100,9 @@ function AdminPage() {
   const [targetGrade, setTargetGrade] = useState('');
   const [targetDepartment, setTargetDepartment] = useState('');
 
+  const [messageSearch, setMessageSearch] = useState('');
+  const [messageStatusFilter, setMessageStatusFilter] = useState<MessageStatus | 'ALL'>('ALL');
+
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [loadingReadStatus, setLoadingReadStatus] = useState(false);
@@ -701,11 +704,49 @@ function AdminPage() {
           </button>
         </div>
 
+        <div className="message-filter-bar">
+          <label>
+            {'\u691c\u7d22'}
+            <input
+              value={messageSearch}
+              onChange={(event) => setMessageSearch(event.target.value)}
+              placeholder={'\u30bf\u30a4\u30c8\u30eb\u30fb\u672c\u6587\u3067\u691c\u7d22'}
+            />
+          </label>
+
+          <label>
+            {'\u72b6\u614b'}
+            <select
+              value={messageStatusFilter}
+              onChange={(event) => setMessageStatusFilter(event.target.value as MessageStatus | 'ALL')}
+            >
+              <option value="ALL">{'\u3059\u3079\u3066'}</option>
+              <option value="DRAFT">{messageStatusLabels.DRAFT}</option>
+              <option value="SENT">{messageStatusLabels.SENT}</option>
+            </select>
+          </label>
+
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              setMessageSearch('');
+              setMessageStatusFilter('ALL');
+            }}
+          >
+            {'\u6761\u4ef6\u30af\u30ea\u30a2'}
+          </button>
+
+          <p>
+            {'\u8868\u793a'}: {filteredMessages.length} / {messages.length}
+          </p>
+        </div>
+
         {loadingMessages && <p className="muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
 
         {!loadingMessages && (
           <div className="message-list">
-            {messages.map((message) => {
+            {filteredMessages.map((message) => {
               const targetCount = getTargetUsers(message).length;
               const readCount = getReadCount(message);
               const unreadCount = Math.max(targetCount - readCount, 0);
@@ -773,8 +814,8 @@ function AdminPage() {
               );
             })}
 
-            {messages.length === 0 && (
-              <p className="muted">{'\u307e\u3060\u9023\u7d61\u306f\u4f5c\u6210\u3055\u308c\u3066\u3044\u307e\u305b\u3093\u3002'}</p>
+            {filteredMessages.length === 0 && (
+              <p className="muted">{'\u6761\u4ef6\u306b\u4e00\u81f4\u3059\u308b\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'}</p>
             )}
           </div>
         )}
