@@ -37,17 +37,26 @@ type Message = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  STUDENT: '生徒',
-  PARENT: '保護者',
-  TEACHER: '教員',
-  STAFF: '事務',
-  ADMIN: '管理者',
+  STUDENT: '\u751f\u5f92',
+  PARENT: '\u4fdd\u8b77\u8005',
+  TEACHER: '\u6559\u54e1',
+  STAFF: '\u4e8b\u52d9',
+  ADMIN: '\u7ba1\u7406\u8005',
 };
 
 const messageStatusLabels: Record<MessageStatus, string> = {
-  DRAFT: '下書き',
-  SENT: '送信済み',
+  DRAFT: '\u4e0b\u66f8\u304d',
+  SENT: '\u9001\u4fe1\u6e08\u307f',
 };
+
+const departmentOptions = [
+  { value: '', label: '\u672a\u6307\u5b9a / \u5168\u6240\u5c5e' },
+  { value: 'Mechanical Engineering', label: 'Mechanical Engineering' },
+  { value: 'Electrical Engineering', label: 'Electrical Engineering' },
+  { value: 'Civil Engineering', label: 'Civil Engineering' },
+  { value: 'Architecture', label: 'Architecture' },
+  { value: 'Applied Chemistry', label: 'Applied Chemistry' },
+] as const;
 
 function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -99,13 +108,13 @@ function AdminPage() {
       const response = await fetch('http://localhost:3000/users');
 
       if (!response.ok) {
-        throw new Error('ユーザー一覧の取得に失敗しました');
+        throw new Error('\u30e6\u30fc\u30b6\u30fc\u4e00\u89a7\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
       const data: User[] = await response.json();
       setUsers(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     } finally {
       setLoadingUsers(false);
     }
@@ -119,13 +128,13 @@ function AdminPage() {
       const response = await fetch('http://localhost:3000/messages');
 
       if (!response.ok) {
-        throw new Error('連絡一覧の取得に失敗しました');
+        throw new Error('\u9023\u7d61\u4e00\u89a7\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
       const data: Message[] = await response.json();
       setMessages(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     } finally {
       setLoadingMessages(false);
     }
@@ -163,7 +172,7 @@ function AdminPage() {
           ? errorData.message.join(' / ')
           : typeof errorData.message === 'string'
             ? errorData.message
-            : 'ユーザーの作成に失敗しました';
+            : '\u30e6\u30fc\u30b6\u30fc\u306e\u4f5c\u6210\u306b\u5931\u6557\u3057\u307e\u3057\u305f';
 
         throw new Error(errorMessage);
       }
@@ -173,17 +182,17 @@ function AdminPage() {
       setRole('STUDENT');
       setUserGrade('');
       setDepartment('');
-      setNotice('ユーザーを追加しました');
+      setNotice('\u30e6\u30fc\u30b6\u30fc\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
 
       await fetchUsers();
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
   }
 
   async function handleDeleteUser(user: User) {
-    const ok = window.confirm(`${user.name} を削除しますか？`);
+    const ok = window.confirm(`${user.name} \u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f`);
 
     if (!ok) {
       return;
@@ -198,14 +207,14 @@ function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('ユーザーの削除に失敗しました');
+        throw new Error('\u30e6\u30fc\u30b6\u30fc\u306e\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
-      setNotice('ユーザーを削除しました');
+      setNotice('\u30e6\u30fc\u30b6\u30fc\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
       await fetchUsers();
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
   }
 
@@ -236,7 +245,7 @@ function AdminPage() {
           ? errorData.message.join(' / ')
           : typeof errorData.message === 'string'
             ? errorData.message
-            : '連絡の作成に失敗しました';
+            : '\u9023\u7d61\u306e\u4f5c\u6210\u306b\u5931\u6557\u3057\u307e\u3057\u305f';
 
         throw new Error(errorMessage);
       }
@@ -246,16 +255,16 @@ function AdminPage() {
       setTargetRole('');
       setTargetGrade('');
       setTargetDepartment('');
-      setNotice('連絡を作成しました');
+      setNotice('\u9023\u7d61\u3092\u4f5c\u6210\u3057\u307e\u3057\u305f');
 
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
   }
 
   async function handleSendMessage(message: Message) {
-    const ok = window.confirm(`${message.title} を送信済みにしますか？`);
+    const ok = window.confirm(`${message.title} \u3092\u9001\u4fe1\u6e08\u307f\u306b\u3057\u307e\u3059\u304b\uff1f`);
 
     if (!ok) {
       return;
@@ -270,13 +279,13 @@ function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('連絡の送信処理に失敗しました');
+        throw new Error('\u9023\u7d61\u306e\u9001\u4fe1\u51e6\u7406\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
-      setNotice('連絡を送信済みにしました');
+      setNotice('\u9023\u7d61\u3092\u9001\u4fe1\u6e08\u307f\u306b\u3057\u307e\u3057\u305f');
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
   }
 
@@ -288,7 +297,7 @@ function AdminPage() {
       const response = await fetch(`http://localhost:3000/messages/${message.id}/read-status`);
 
       if (!response.ok) {
-        throw new Error('既読状況の取得に失敗しました');
+        throw new Error('\u65e2\u8aad\u72b6\u6cc1\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
       const data = await response.json();
@@ -296,7 +305,6 @@ function AdminPage() {
       const readUsers = (data.readUsers ?? []) as Array<{
         name: string;
         email: string;
-        readAt?: string;
       }>;
 
       const unreadUsers = (data.unreadUsers ?? []) as Array<{
@@ -306,26 +314,26 @@ function AdminPage() {
 
       const readText =
         readUsers.length > 0
-          ? readUsers.map((user) => `・${user.name} (${user.email})`).join('\n')
-          : 'なし';
+          ? readUsers.map((user) => `\u30fb${user.name} (${user.email})`).join('\n')
+          : '\u306a\u3057';
 
       const unreadText =
         unreadUsers.length > 0
-          ? unreadUsers.map((user) => `・${user.name} (${user.email})`).join('\n')
-          : 'なし';
+          ? unreadUsers.map((user) => `\u30fb${user.name} (${user.email})`).join('\n')
+          : '\u306a\u3057';
 
       window.alert(
-        `連絡: ${data.message.title}\n\n` +
-          `既読: ${data.readCount}\n${readText}\n\n` +
-          `未読: ${data.unreadCount}\n${unreadText}`,
+        `\u9023\u7d61: ${data.message.title}\n\n` +
+          `\u65e2\u8aad: ${data.readCount}\n${readText}\n\n` +
+          `\u672a\u8aad: ${data.unreadCount}\n${unreadText}`,
       );
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
   }
 
   async function handleDeleteMessage(message: Message) {
-    const ok = window.confirm(`${message.title} を削除しますか？`);
+    const ok = window.confirm(`${message.title} \u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f`);
 
     if (!ok) {
       return;
@@ -340,20 +348,51 @@ function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('連絡の削除に失敗しました');
+        throw new Error('\u9023\u7d61\u306e\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
-      setNotice('連絡を削除しました');
+      setNotice('\u9023\u7d61\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
   }
 
+  function getTargetUsers(message: Message) {
+    return users.filter((user) => {
+      if (!user.isActive) {
+        return false;
+      }
+
+      if (message.targetRole && user.role !== message.targetRole) {
+        return false;
+      }
+
+      if (message.targetGrade && user.grade !== message.targetGrade) {
+        return false;
+      }
+
+      if (message.targetDepartment && user.department !== message.targetDepartment) {
+        return false;
+      }
+
+      return true;
+    });
+  }
+
+  function getReadCount(message: Message) {
+    const targetUsers = getTargetUsers(message);
+    const targetUserIds = new Set(targetUsers.map((user) => user.id));
+
+    return (message.readStatuses ?? []).filter((readStatus) =>
+      targetUserIds.has(readStatus.userId),
+    ).length;
+  }
+
   function getTargetLabel(message: Message) {
-    const roleText = message.targetRole ? roleLabels[message.targetRole] : '全員';
-    const gradeText = message.targetGrade ? `${message.targetGrade}年` : '全学年';
-    const departmentText = message.targetDepartment || '全所属';
+    const roleText = message.targetRole ? roleLabels[message.targetRole] : '\u5168\u54e1';
+    const gradeText = message.targetGrade ? `${message.targetGrade}\u5e74` : '\u5168\u5b66\u5e74';
+    const departmentText = message.targetDepartment || '\u5168\u6240\u5c5e';
 
     return `${roleText} / ${gradeText} / ${departmentText}`;
   }
@@ -363,28 +402,28 @@ function AdminPage() {
       <header className="header">
         <div>
           <p className="eyebrow">Akashi Contact App</p>
-          <h1>学校連絡アプリ 管理画面</h1>
+          <h1>{'\u5b66\u6821\u9023\u7d61\u30a2\u30d7\u30ea \u7ba1\u7406\u753b\u9762'}</h1>
           <p className="header-text">
-            ユーザー管理と学校連絡の作成を行います。
+            {'\u30e6\u30fc\u30b6\u30fc\u7ba1\u7406\u3068\u5b66\u6821\u9023\u7d61\u306e\u4f5c\u6210\u3092\u884c\u3044\u307e\u3059\u3002'}
           </p>
         </div>
       </header>
 
       <section className="summary-grid">
         <div className="summary-card">
-          <span className="summary-label">登録ユーザー</span>
+          <span className="summary-label">{'\u767b\u9332\u30e6\u30fc\u30b6\u30fc'}</span>
           <strong>{users.length}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">有効ユーザー</span>
+          <span className="summary-label">{'\u6709\u52b9\u30e6\u30fc\u30b6\u30fc'}</span>
           <strong>{activeCount}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">生徒</span>
+          <span className="summary-label">{'\u751f\u5f92'}</span>
           <strong>{roleCounts.STUDENT}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">作成済み連絡</span>
+          <span className="summary-label">{'\u4f5c\u6210\u6e08\u307f\u9023\u7d61'}</span>
           <strong>{messages.length}</strong>
         </div>
       </section>
@@ -395,39 +434,39 @@ function AdminPage() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>連絡作成</h2>
-            <p>学校から配信する連絡のタイトル、本文、宛先条件を作成します。</p>
+            <h2>{'\u9023\u7d61\u4f5c\u6210'}</h2>
+            <p>{'\u5b66\u6821\u304b\u3089\u914d\u4fe1\u3059\u308b\u9023\u7d61\u306e\u30bf\u30a4\u30c8\u30eb\u3001\u672c\u6587\u3001\u5b9b\u5148\u6761\u4ef6\u3092\u4f5c\u6210\u3057\u307e\u3059\u3002'}</p>
           </div>
         </div>
 
         <form className="message-form" onSubmit={handleCreateMessage}>
           <label>
-            タイトル
+            {'\u30bf\u30a4\u30c8\u30eb'}
             <input
               value={messageTitle}
               onChange={(event) => setMessageTitle(event.target.value)}
-              placeholder="例：明日の予定について"
+              placeholder={'\u4f8b\uff1a\u660e\u65e5\u306e\u4e88\u5b9a\u306b\u3064\u3044\u3066'}
             />
           </label>
 
           <label>
-            本文
+            {'\u672c\u6587'}
             <textarea
               value={messageBody}
               onChange={(event) => setMessageBody(event.target.value)}
-              placeholder="例：明日は通常通り授業を行います。"
+              placeholder={'\u4f8b\uff1a\u660e\u65e5\u306f\u901a\u5e38\u901a\u308a\u6388\u696d\u3092\u884c\u3044\u307e\u3059\u3002'}
               rows={5}
             />
           </label>
 
           <div className="target-grid">
             <label>
-              宛先種別
+              {'\u5b9b\u5148\u7a2e\u5225'}
               <select
                 value={targetRole}
                 onChange={(event) => setTargetRole(event.target.value as UserRole | '')}
               >
-                <option value="">全員</option>
+                <option value="">{'\u5168\u54e1'}</option>
                 <option value="STUDENT">{roleLabels.STUDENT}</option>
                 <option value="PARENT">{roleLabels.PARENT}</option>
                 <option value="TEACHER">{roleLabels.TEACHER}</option>
@@ -437,32 +476,37 @@ function AdminPage() {
             </label>
 
             <label>
-              対象学年
+              {'\u5bfe\u8c61\u5b66\u5e74'}
               <select
                 value={targetGrade}
                 onChange={(event) => setTargetGrade(event.target.value)}
               >
-                <option value="">全学年</option>
-                <option value="1">1年</option>
-                <option value="2">2年</option>
-                <option value="3">3年</option>
-                <option value="4">4年</option>
-                <option value="5">5年</option>
+                <option value="">{'\u5168\u5b66\u5e74'}</option>
+                <option value="1">1{'\u5e74'}</option>
+                <option value="2">2{'\u5e74'}</option>
+                <option value="3">3{'\u5e74'}</option>
+                <option value="4">4{'\u5e74'}</option>
+                <option value="5">5{'\u5e74'}</option>
               </select>
             </label>
 
             <label>
-              対象所属
-              <input
+              {'\u5bfe\u8c61\u6240\u5c5e'}
+              <select
                 value={targetDepartment}
                 onChange={(event) => setTargetDepartment(event.target.value)}
-                placeholder="例：Mechanical Engineering"
-              />
+              >
+                {departmentOptions.map((option) => (
+                  <option key={`target-${option.value || 'all'}`} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
             </label>
           </div>
 
           <button type="submit" className="primary-button">
-            連絡を作成
+            {'\u9023\u7d61\u3092\u4f5c\u6210'}
           </button>
         </form>
       </section>
@@ -470,21 +514,22 @@ function AdminPage() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>連絡一覧</h2>
-            <p>作成済みの学校連絡を表示します。</p>
+            <h2>{'\u9023\u7d61\u4e00\u89a7'}</h2>
+            <p>{'\u4f5c\u6210\u6e08\u307f\u306e\u5b66\u6821\u9023\u7d61\u3092\u8868\u793a\u3057\u307e\u3059\u3002'}</p>
           </div>
           <button type="button" className="secondary-button" onClick={fetchMessages}>
-            再読み込み
+            {'\u518d\u8aad\u307f\u8fbc\u307f'}
           </button>
         </div>
 
-        {loadingMessages && <p className="muted">読み込み中...</p>}
+        {loadingMessages && <p className="muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
 
         {!loadingMessages && (
           <div className="message-list">
             {messages.map((message) => {
-              const readCount = message.readStatuses?.length ?? 0;
-              const unreadCount = Math.max(users.length - readCount, 0);
+              const targetCount = getTargetUsers(message).length;
+              const readCount = getReadCount(message);
+              const unreadCount = Math.max(targetCount - readCount, 0);
 
               return (
                 <article className="message-item" key={message.id}>
@@ -496,12 +541,13 @@ function AdminPage() {
                     <p>{message.body}</p>
 
                     <p className="target-role-label">
-                      宛先: {getTargetLabel(message)}
+                      {'\u5b9b\u5148'}: {getTargetLabel(message)}
                     </p>
 
                     <div className="read-summary">
-                      <span>既読: {readCount}</span>
-                      <span>未読: {message.status === 'SENT' ? unreadCount : '-'}</span>
+                      <span>{'\u5bfe\u8c61'}: {targetCount}</span>
+                      <span>{'\u65e2\u8aad'}: {readCount}</span>
+                      <span>{'\u672a\u8aad'}: {message.status === 'SENT' ? unreadCount : '-'}</span>
                     </div>
                   </div>
 
@@ -513,7 +559,7 @@ function AdminPage() {
                       className="read-status-button"
                       onClick={() => handleShowReadStatus(message)}
                     >
-                      既読状況
+                      {'\u65e2\u8aad\u72b6\u6cc1'}
                     </button>
 
                     {message.status === 'DRAFT' && (
@@ -522,7 +568,7 @@ function AdminPage() {
                         className="send-button"
                         onClick={() => handleSendMessage(message)}
                       >
-                        送信
+                        {'\u9001\u4fe1'}
                       </button>
                     )}
 
@@ -531,7 +577,7 @@ function AdminPage() {
                       className="delete-button"
                       onClick={() => handleDeleteMessage(message)}
                     >
-                      削除
+                      {'\u524a\u9664'}
                     </button>
                   </div>
                 </article>
@@ -539,7 +585,7 @@ function AdminPage() {
             })}
 
             {messages.length === 0 && (
-              <p className="muted">まだ連絡は作成されていません。</p>
+              <p className="muted">{'\u307e\u3060\u9023\u7d61\u306f\u4f5c\u6210\u3055\u308c\u3066\u3044\u307e\u305b\u3093\u3002'}</p>
             )}
           </div>
         )}
@@ -548,23 +594,23 @@ function AdminPage() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>ユーザー追加</h2>
-            <p>名前、メールアドレス、権限、学年、所属を入力してユーザーを登録します。</p>
+            <h2>{'\u30e6\u30fc\u30b6\u30fc\u8ffd\u52a0'}</h2>
+            <p>{'\u540d\u524d\u3001\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3001\u6a29\u9650\u3001\u5b66\u5e74\u3001\u6240\u5c5e\u3092\u5165\u529b\u3057\u3066\u30e6\u30fc\u30b6\u30fc\u3092\u767b\u9332\u3057\u307e\u3059\u3002'}</p>
           </div>
         </div>
 
         <form className="form" onSubmit={handleCreateUser}>
           <label>
-            名前
+            {'\u540d\u524d'}
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="例：山田 太郎"
+              placeholder={'\u4f8b\uff1a\u5c71\u7530 \u592a\u90ce'}
             />
           </label>
 
           <label>
-            メールアドレス
+            {'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9'}
             <input
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -573,7 +619,7 @@ function AdminPage() {
           </label>
 
           <label>
-            権限
+            {'\u6a29\u9650'}
             <select
               value={role}
               onChange={(event) => setRole(event.target.value as UserRole)}
@@ -587,12 +633,12 @@ function AdminPage() {
           </label>
 
           <label>
-            学年
+            {'\u5b66\u5e74'}
             <select
               value={userGrade}
               onChange={(event) => setUserGrade(event.target.value)}
             >
-              <option value="">未指定</option>
+              <option value="">{'\u672a\u6307\u5b9a'}</option>
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -602,16 +648,21 @@ function AdminPage() {
           </label>
 
           <label>
-            所属
-            <input
+            {'\u6240\u5c5e'}
+            <select
               value={department}
               onChange={(event) => setDepartment(event.target.value)}
-              placeholder="Mechanical Engineering"
-            />
+            >
+              {departmentOptions.map((option) => (
+                <option key={`user-${option.value || 'none'}`} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </label>
 
           <button type="submit" className="primary-button">
-            追加
+            {'\u8ffd\u52a0'}
           </button>
         </form>
       </section>
@@ -619,15 +670,15 @@ function AdminPage() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>ユーザー一覧</h2>
-            <p>現在登録されているユーザーを表示します。</p>
+            <h2>{'\u30e6\u30fc\u30b6\u30fc\u4e00\u89a7'}</h2>
+            <p>{'\u73fe\u5728\u767b\u9332\u3055\u308c\u3066\u3044\u308b\u30e6\u30fc\u30b6\u30fc\u3092\u8868\u793a\u3057\u307e\u3059\u3002'}</p>
           </div>
           <button type="button" className="secondary-button" onClick={fetchUsers}>
-            再読み込み
+            {'\u518d\u8aad\u307f\u8fbc\u307f'}
           </button>
         </div>
 
-        {loadingUsers && <p className="muted">読み込み中...</p>}
+        {loadingUsers && <p className="muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
 
         {!loadingUsers && (
           <div className="table-wrapper">
@@ -635,14 +686,14 @@ function AdminPage() {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>名前</th>
-                  <th>メールアドレス</th>
-                  <th>権限</th>
-                  <th>学年</th>
-                  <th>所属</th>
-                  <th>状態</th>
-                  <th>作成日時</th>
-                  <th>操作</th>
+                  <th>{'\u540d\u524d'}</th>
+                  <th>{'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9'}</th>
+                  <th>{'\u6a29\u9650'}</th>
+                  <th>{'\u5b66\u5e74'}</th>
+                  <th>{'\u6240\u5c5e'}</th>
+                  <th>{'\u72b6\u614b'}</th>
+                  <th>{'\u4f5c\u6210\u65e5\u6642'}</th>
+                  <th>{'\u64cd\u4f5c'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -658,7 +709,7 @@ function AdminPage() {
                     </td>
                     <td>{user.grade ?? '-'}</td>
                     <td>{user.department || '-'}</td>
-                    <td>{user.isActive ? '有効' : '-'}</td>
+                    <td>{user.isActive ? '\u6709\u52b9' : '-'}</td>
                     <td>{new Date(user.createdAt).toLocaleString('ja-JP')}</td>
                     <td>
                       <button
@@ -666,7 +717,7 @@ function AdminPage() {
                         className="delete-button"
                         onClick={() => handleDeleteUser(user)}
                       >
-                        削除
+                        {'\u524a\u9664'}
                       </button>
                     </td>
                   </tr>
