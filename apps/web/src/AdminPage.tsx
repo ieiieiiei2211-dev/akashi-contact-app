@@ -22,28 +22,6 @@ type ReadStatus = {
   userId: number;
   readAt: string;
 };
-type SurveyChoice = {
-  id: number;
-  surveyId: number;
-  label: string;
-  order: number;
-};
-
-type SurveyAnswer = {
-  id: number;
-  surveyId: number;
-  choiceId: number;
-  userId: number;
-  answeredAt: string;
-};
-
-type Survey = {
-  id: number;
-  messageId: number;
-  question: string;
-  choices: SurveyChoice[];
-  answers: SurveyAnswer[];
-};
 
 type Message = {
   id: number;
@@ -56,7 +34,6 @@ type Message = {
   createdAt: string;
   updatedAt: string;
   readStatuses?: ReadStatus[];
-  survey?: Survey | null;
 };
 
 type ReadStatusDetailUser = {
@@ -86,20 +63,20 @@ type ReadStatusDetail = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  STUDENT: '\u751f\u5f92',
-  PARENT: '\u4fdd\u8b77\u8005',
-  TEACHER: '\u6559\u54e1',
-  STAFF: '\u4e8b\u52d9',
-  ADMIN: '\u7ba1\u7406\u8005',
+  STUDENT: '生徒',
+  PARENT: '保護者',
+  TEACHER: '教員',
+  STAFF: '事務',
+  ADMIN: '管理者',
 };
 
 const messageStatusLabels: Record<MessageStatus, string> = {
-  DRAFT: '\u4e0b\u66f8\u304d',
-  SENT: '\u9001\u4fe1\u6e08\u307f',
+  DRAFT: '下書き',
+  SENT: '送信済み',
 };
 
 const departmentOptions = [
-  { value: '', label: '\u672a\u6307\u5b9a / \u5168\u6240\u5c5e' },
+  { value: '', label: '未指定 / 全所属' },
   { value: 'Mechanical Engineering', label: 'Mechanical Engineering' },
   { value: 'Electrical Engineering', label: 'Electrical Engineering' },
   { value: 'Civil Engineering', label: 'Civil Engineering' },
@@ -122,8 +99,6 @@ function AdminPage() {
   const [targetRole, setTargetRole] = useState<UserRole | ''>('');
   const [targetGrade, setTargetGrade] = useState('');
   const [targetDepartment, setTargetDepartment] = useState('');
-  const [surveyQuestion, setSurveyQuestion] = useState('');
-  const [surveyChoicesText, setSurveyChoicesText] = useState('');
 
   const [messageSearch, setMessageSearch] = useState('');
   const [messageStatusFilter, setMessageStatusFilter] = useState<MessageStatus | 'ALL'>('ALL');
@@ -161,6 +136,31 @@ function AdminPage() {
     );
   }, [users]);
 
+  // ▼ 追加: 未定義エラーを解消するためのフィルタリングロジック
+  const filteredMessages = useMemo(() => {
+    return messages.filter((message) => {
+      const matchSearch = message.title.includes(messageSearch) || message.body.includes(messageSearch);
+      const matchStatus = messageStatusFilter === 'ALL' || message.status === messageStatusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [messages, messageSearch, messageStatusFilter]);
+
+  const filteredUsers = useMemo(() => {
+    return users.filter((user) => {
+      const matchSearch =
+        user.name.includes(userSearch) ||
+        user.email.includes(userSearch) ||
+        (user.department || '').includes(userSearch);
+      const matchRole = userRoleFilter === 'ALL' || user.role === userRoleFilter;
+      const matchActive =
+        userActiveFilter === 'ALL' ||
+        (userActiveFilter === 'ACTIVE' && user.isActive) ||
+        (userActiveFilter === 'INACTIVE' && !user.isActive);
+      return matchSearch && matchRole && matchActive;
+    });
+  }, [users, userSearch, userRoleFilter, userActiveFilter]);
+  // ▲ 追加ここまで
+
   async function fetchUsers() {
     setLoadingUsers(true);
     setError('');
@@ -169,13 +169,13 @@ function AdminPage() {
       const response = await fetch('http://localhost:3000/users');
 
       if (!response.ok) {
-        throw new Error('\u30e6\u30fc\u30b6\u30fc\u4e00\u89a7\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+        throw new Error('ユーザー一覧の取得に失敗しました');
       }
 
       const data: User[] = await response.json();
       setUsers(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     } finally {
       setLoadingUsers(false);
     }
@@ -189,13 +189,13 @@ function AdminPage() {
       const response = await fetch('http://localhost:3000/messages');
 
       if (!response.ok) {
-        throw new Error('\u9023\u7d61\u4e00\u89a7\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+        throw new Error('連絡一覧の取得に失敗しました');
       }
 
       const data: Message[] = await response.json();
       setMessages(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     } finally {
       setLoadingMessages(false);
     }
@@ -233,7 +233,7 @@ function AdminPage() {
           ? errorData.message.join(' / ')
           : typeof errorData.message === 'string'
             ? errorData.message
-            : '\u30e6\u30fc\u30b6\u30fc\u306e\u4f5c\u6210\u306b\u5931\u6557\u3057\u307e\u3057\u305f';
+            : 'ユーザーの作成に失敗しました';
 
         throw new Error(errorMessage);
       }
@@ -243,32 +243,32 @@ function AdminPage() {
       setRole('STUDENT');
       setUserGrade('');
       setDepartment('');
-      setNotice('\u30e6\u30fc\u30b6\u30fc\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
+      setNotice('ユーザーを追加しました');
 
       await fetchUsers();
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   }
 
   async function handleEditUser(user: User) {
-    const nextName = window.prompt('\u540d\u524d\u3092\u7de8\u96c6', user.name);
+    const nextName = window.prompt('名前を編集', user.name);
     if (nextName === null) {
       return;
     }
 
-    const nextEmail = window.prompt('\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3092\u7de8\u96c6', user.email);
+    const nextEmail = window.prompt('メールアドレスを編集', user.email);
     if (nextEmail === null) {
       return;
     }
 
-    const nextGrade = window.prompt('\u5b66\u5e74\u3092\u7de8\u96c6\uff081\u301c5\u3001\u7a7a\u6b04\u3067\u672a\u6307\u5b9a\uff09', user.grade ? String(user.grade) : '');
+    const nextGrade = window.prompt('学年を編集（1〜5、空欄で未指定）', user.grade ? String(user.grade) : '');
     if (nextGrade === null) {
       return;
     }
 
-    const nextDepartment = window.prompt('\u6240\u5c5e\u3092\u7de8\u96c6\uff08\u7a7a\u6b04\u3067\u672a\u6307\u5b9a\uff09', user.department ?? '');
+    const nextDepartment = window.prompt('所属を編集（空欄で未指定）', user.department ?? '');
     if (nextDepartment === null) {
       return;
     }
@@ -297,20 +297,20 @@ function AdminPage() {
             ? errorData.message
             : Array.isArray(errorData.message)
               ? errorData.message.join(' / ')
-              : '\u30e6\u30fc\u30b6\u30fc\u306e\u7de8\u96c6\u306b\u5931\u6557\u3057\u307e\u3057\u305f';
+              : 'ユーザーの編集に失敗しました';
 
         throw new Error(errorMessage);
       }
 
-      setNotice('\u30e6\u30fc\u30b6\u30fc\u60c5\u5831\u3092\u7de8\u96c6\u3057\u307e\u3057\u305f');
+      setNotice('ユーザー情報を編集しました');
       await fetchUsers();
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   }
   async function handleDeleteUser(user: User) {
-    const ok = window.confirm(`${user.name} \u3092\u7121\u52b9\u5316\u3057\u307e\u3059\u304b\uff1f`);
+    const ok = window.confirm(`${user.name} を無効化しますか？`);
 
     if (!ok) {
       return;
@@ -325,19 +325,19 @@ function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('\u30e6\u30fc\u30b6\u30fc\u306e\u7121\u52b9\u5316\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+        throw new Error('ユーザーの無効化に失敗しました');
       }
 
-      setNotice('\u30e6\u30fc\u30b6\u30fc\u3092\u7121\u52b9\u5316\u3057\u307e\u3057\u305f');
+      setNotice('ユーザーを無効化しました');
       await fetchUsers();
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   }
 
   async function handleActivateUser(user: User) {
-    const ok = window.confirm(`${user.name} \u3092\u6709\u52b9\u5316\u3057\u307e\u3059\u304b\uff1f`);
+    const ok = window.confirm(`${user.name} を有効化しますか？`);
 
     if (!ok) {
       return;
@@ -352,14 +352,14 @@ function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('\u30e6\u30fc\u30b6\u30fc\u306e\u6709\u52b9\u5316\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+        throw new Error('ユーザーの有効化に失敗しました');
       }
 
-      setNotice('\u30e6\u30fc\u30b6\u30fc\u3092\u6709\u52b9\u5316\u3057\u307e\u3057\u305f');
+      setNotice('ユーザーを有効化しました');
       await fetchUsers();
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   }
 
@@ -381,13 +381,6 @@ function AdminPage() {
           targetRole: targetRole || undefined,
           targetGrade: targetGrade ? Number(targetGrade) : undefined,
           targetDepartment: targetDepartment || undefined,
-          surveyQuestion: surveyQuestion || undefined,
-          surveyChoices: surveyChoicesText
-            ? surveyChoicesText
-                .split('\n')
-                .map((choice) => choice.trim())
-                .filter((choice) => choice.length > 0)
-            : undefined,
         }),
       });
 
@@ -397,7 +390,7 @@ function AdminPage() {
           ? errorData.message.join(' / ')
           : typeof errorData.message === 'string'
             ? errorData.message
-            : '\u9023\u7d61\u306e\u4f5c\u6210\u306b\u5931\u6557\u3057\u307e\u3057\u305f';
+            : '連絡の作成に失敗しました';
 
         throw new Error(errorMessage);
       }
@@ -407,28 +400,26 @@ function AdminPage() {
       setTargetRole('');
       setTargetGrade('');
       setTargetDepartment('');
-      setSurveyQuestion('');
-      setSurveyChoicesText('');
-      setNotice('\u9023\u7d61\u3092\u4f5c\u6210\u3057\u307e\u3057\u305f');
+      setNotice('連絡を作成しました');
 
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   }
 
   async function handleEditDraftMessage(message: Message) {
     if (message.status !== 'DRAFT') {
-      setError('\u9001\u4fe1\u6e08\u307f\u306e\u9023\u7d61\u306f\u7de8\u96c6\u3067\u304d\u307e\u305b\u3093');
+      setError('送信済みの連絡は編集できません');
       return;
     }
 
-    const nextTitle = window.prompt('\u30bf\u30a4\u30c8\u30eb\u3092\u7de8\u96c6', message.title);
+    const nextTitle = window.prompt('タイトルを編集', message.title);
     if (nextTitle === null) {
       return;
     }
 
-    const nextBody = window.prompt('\u672c\u6587\u3092\u7de8\u96c6', message.body);
+    const nextBody = window.prompt('本文を編集', message.body);
     if (nextBody === null) {
       return;
     }
@@ -453,19 +444,19 @@ function AdminPage() {
         const errorMessage =
           typeof errorData.message === 'string'
             ? errorData.message
-            : '\u9023\u7d61\u306e\u7de8\u96c6\u306b\u5931\u6557\u3057\u307e\u3057\u305f';
+            : '連絡の編集に失敗しました';
 
         throw new Error(errorMessage);
       }
 
-      setNotice('\u4e0b\u66f8\u304d\u9023\u7d61\u3092\u7de8\u96c6\u3057\u307e\u3057\u305f');
+      setNotice('下書き連絡を編集しました');
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   }
   async function handleSendMessage(message: Message) {
-    const ok = window.confirm(`${message.title} \u3092\u9001\u4fe1\u6e08\u307f\u306b\u3057\u307e\u3059\u304b\uff1f`);
+    const ok = window.confirm(`${message.title} を送信済みにしますか？`);
 
     if (!ok) {
       return;
@@ -480,13 +471,13 @@ function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('\u9023\u7d61\u306e\u9001\u4fe1\u51e6\u7406\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+        throw new Error('連絡の送信処理に失敗しました');
       }
 
-      setNotice('\u9023\u7d61\u3092\u9001\u4fe1\u6e08\u307f\u306b\u3057\u307e\u3057\u305f');
+      setNotice('連絡を送信済みにしました');
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   }
 
@@ -499,47 +490,20 @@ function AdminPage() {
       const response = await fetch(`http://localhost:3000/messages/${message.id}/read-status`);
 
       if (!response.ok) {
-        throw new Error('\u65e2\u8aad\u72b6\u6cc1\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+        throw new Error('既読状況の取得に失敗しました');
       }
 
       const data: ReadStatusDetail = await response.json();
       setReadStatusDetail(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     } finally {
       setLoadingReadStatus(false);
     }
   }
 
-  async function handleShowSurveyStatus(message: Message) {
-    setNotice('');
-    setError('');
-
-    try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-status`);
-
-      if (!response.ok) {
-        throw new Error('\u30a2\u30f3\u30b1\u30fc\u30c8\u96c6\u8a08\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
-      }
-
-      const data = await response.json();
-
-      const summaryText = (data.summary ?? [])
-        .map((item: { label: string; count: number }) => `\u30fb${item.label}: ${item.count}\u4ef6`)
-        .join('\n');
-
-      window.alert(
-        `\u30a2\u30f3\u30b1\u30fc\u30c8: ${data.message.title}\n\n` +
-          `\u8cea\u554f: ${data.survey.question}\n` +
-          `\u56de\u7b54\u6570: ${data.totalAnswerCount}\n\n` +
-          summaryText,
-      );
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
-    }
-  }
   async function handleDeleteMessage(message: Message) {
-    const ok = window.confirm(`${message.title} \u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f`);
+    const ok = window.confirm(`${message.title} を削除しますか？`);
 
     if (!ok) {
       return;
@@ -554,17 +518,17 @@ function AdminPage() {
       });
 
       if (!response.ok) {
-        throw new Error('\u9023\u7d61\u306e\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+        throw new Error('連絡の削除に失敗しました');
       }
 
       if (readStatusDetail?.message.id === message.id) {
         setReadStatusDetail(null);
       }
 
-      setNotice('\u9023\u7d61\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
+      setNotice('連絡を削除しました');
       await fetchMessages();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
     }
   }
 
@@ -600,16 +564,16 @@ function AdminPage() {
   }
 
   function getTargetLabel(message: Message | ReadStatusDetail['message']) {
-    const roleText = message.targetRole ? roleLabels[message.targetRole] : '\u5168\u54e1';
-    const gradeText = message.targetGrade ? `${message.targetGrade}\u5e74` : '\u5168\u5b66\u5e74';
-    const departmentText = message.targetDepartment || '\u5168\u6240\u5c5e';
+    const roleText = message.targetRole ? roleLabels[message.targetRole] : '全員';
+    const gradeText = message.targetGrade ? `${message.targetGrade}年` : '全学年';
+    const departmentText = message.targetDepartment || '全所属';
 
     return `${roleText} / ${gradeText} / ${departmentText}`;
   }
 
   function formatUserInfo(user: ReadStatusDetailUser) {
-    const gradeText = user.grade ? `${user.grade}\u5e74` : '\u5b66\u5e74\u672a\u6307\u5b9a';
-    const departmentText = user.department || '\u6240\u5c5e\u672a\u6307\u5b9a';
+    const gradeText = user.grade ? `${user.grade}年` : '学年未指定';
+    const departmentText = user.department || '所属未指定';
 
     return `${roleLabels[user.role]} / ${gradeText} / ${departmentText}`;
   }
@@ -619,28 +583,28 @@ function AdminPage() {
       <header className="header">
         <div>
           <p className="eyebrow">Akashi Contact App</p>
-          <h1>{'\u5b66\u6821\u9023\u7d61\u30a2\u30d7\u30ea \u7ba1\u7406\u753b\u9762'}</h1>
+          <h1>学校連絡アプリ 管理画面</h1>
           <p className="header-text">
-            {'\u30e6\u30fc\u30b6\u30fc\u7ba1\u7406\u3068\u5b66\u6821\u9023\u7d61\u306e\u4f5c\u6210\u3092\u884c\u3044\u307e\u3059\u3002'}
+            ユーザー管理と学校連絡の作成を行います。
           </p>
         </div>
       </header>
 
       <section className="summary-grid">
         <div className="summary-card">
-          <span className="summary-label">{'\u767b\u9332\u30e6\u30fc\u30b6\u30fc'}</span>
+          <span className="summary-label">登録ユーザー</span>
           <strong>{users.length}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">{'\u6709\u52b9\u30e6\u30fc\u30b6\u30fc'}</span>
+          <span className="summary-label">有効ユーザー</span>
           <strong>{activeCount}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">{'\u751f\u5f92'}</span>
+          <span className="summary-label">生徒</span>
           <strong>{roleCounts.STUDENT}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">{'\u4f5c\u6210\u6e08\u307f\u9023\u7d61'}</span>
+          <span className="summary-label">作成済み連絡</span>
           <strong>{messages.length}</strong>
         </div>
       </section>
@@ -651,39 +615,36 @@ function AdminPage() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>{'\u9023\u7d61\u4f5c\u6210'}</h2>
-            <p>{'\u5b66\u6821\u304b\u3089\u914d\u4fe1\u3059\u308b\u9023\u7d61\u306e\u30bf\u30a4\u30c8\u30eb\u3001\u672c\u6587\u3001\u5b9b\u5148\u6761\u4ef6\u3092\u4f5c\u6210\u3057\u307e\u3059\u3002'}</p>
+            <h2>連絡作成</h2>
+            <p>学校から配信する連絡のタイトル、本文、宛先条件を作成します。</p>
           </div>
         </div>
 
+        {/* ▼ 追加: 欠落していた連絡作成フォーム */}
         <form className="message-form" onSubmit={handleCreateMessage}>
           <label>
-            {'\u30bf\u30a4\u30c8\u30eb'}
+            タイトル
             <input
               value={messageTitle}
-              onChange={(event) => setMessageTitle(event.target.value)}
-              placeholder={'\u4f8b\uff1a\u660e\u65e5\u306e\u4e88\u5b9a\u306b\u3064\u3044\u3066'}
+              onChange={(e) => setMessageTitle(e.target.value)}
+              required
             />
           </label>
-
           <label>
-            {'\u672c\u6587'}
+            本文
             <textarea
               value={messageBody}
-              onChange={(event) => setMessageBody(event.target.value)}
-              placeholder={'\u4f8b\uff1a\u660e\u65e5\u306f\u901a\u5e38\u901a\u308a\u6388\u696d\u3092\u884c\u3044\u307e\u3059\u3002'}
+              onChange={(e) => setMessageBody(e.target.value)}
               rows={5}
+              required
             />
           </label>
-
+          
           <div className="target-grid">
             <label>
-              {'\u5b9b\u5148\u7a2e\u5225'}
-              <select
-                value={targetRole}
-                onChange={(event) => setTargetRole(event.target.value as UserRole | '')}
-              >
-                <option value="">{'\u5168\u54e1'}</option>
+              宛先権限
+              <select value={targetRole} onChange={(e) => setTargetRole(e.target.value as UserRole | '')}>
+                <option value="">全員</option>
                 <option value="STUDENT">{roleLabels.STUDENT}</option>
                 <option value="PARENT">{roleLabels.PARENT}</option>
                 <option value="TEACHER">{roleLabels.TEACHER}</option>
@@ -693,28 +654,22 @@ function AdminPage() {
             </label>
 
             <label>
-              {'\u5bfe\u8c61\u5b66\u5e74'}
-              <select
-                value={targetGrade}
-                onChange={(event) => setTargetGrade(event.target.value)}
-              >
-                <option value="">{'\u5168\u5b66\u5e74'}</option>
-                <option value="1">1{'\u5e74'}</option>
-                <option value="2">2{'\u5e74'}</option>
-                <option value="3">3{'\u5e74'}</option>
-                <option value="4">4{'\u5e74'}</option>
-                <option value="5">5{'\u5e74'}</option>
+              宛先学年
+              <select value={targetGrade} onChange={(e) => setTargetGrade(e.target.value)}>
+                <option value="">全学年</option>
+                <option value="1">1年</option>
+                <option value="2">2年</option>
+                <option value="3">3年</option>
+                <option value="4">4年</option>
+                <option value="5">5年</option>
               </select>
             </label>
 
             <label>
-              {'\u5bfe\u8c61\u6240\u5c5e'}
-              <select
-                value={targetDepartment}
-                onChange={(event) => setTargetDepartment(event.target.value)}
-              >
+              宛先所属
+              <select value={targetDepartment} onChange={(e) => setTargetDepartment(e.target.value)}>
                 {departmentOptions.map((option) => (
-                  <option key={`target-${option.value || 'all'}`} value={option.value}>
+                  <option key={`msg-dept-${option.value || 'none'}`} value={option.value}>
                     {option.label}
                   </option>
                 ))}
@@ -723,90 +678,40 @@ function AdminPage() {
           </div>
 
           <button type="submit" className="primary-button">
-
-          <div className="survey-form-box">
-            <label>
-              {'\u30a2\u30f3\u30b1\u30fc\u30c8\u8cea\u554f\uff08\u4efb\u610f\uff09'}
-              <input
-                value={surveyQuestion}
-                onChange={(event) => setSurveyQuestion(event.target.value)}
-                placeholder={'\u4f8b\uff1a\u6587\u5316\u796d\u306b\u53c2\u52a0\u3067\u304d\u307e\u3059\u304b\uff1f'}
-              />
-            </label>
-
-            <label>
-              {'\u9078\u629e\u80a2\uff081\u884c\u306b1\u3064\u30012\u3064\u4ee5\u4e0a\uff09'}
-              <textarea
-                value={surveyChoicesText}
-                onChange={(event) => setSurveyChoicesText(event.target.value)}
-                placeholder={'\u53c2\u52a0\n\u4e0d\u53c2\u52a0\n\u672a\u5b9a'}
-                rows={4}
-              />
-            </label>
-          </div>
-
-          <div className="target-preview">
-            <div className="target-preview-main">
-              <span>{'\u5bfe\u8c61\u4e88\u5b9a'}</span>
-              <strong>{draftTargetUsers.length}{'\u4eba'}</strong>
-            </div>
-
-            {draftTargetUsers.length > 0 ? (
-              <ul>
-                {draftTargetUsers.slice(0, 5).map((user) => (
-                  <li key={user.id}>
-                    {user.name}
-                    <small>
-                      {roleLabels[user.role]} / {user.grade ? `${user.grade}\u5e74` : '\u5b66\u5e74\u672a\u6307\u5b9a'} / {user.department || '\u6240\u5c5e\u672a\u6307\u5b9a'}
-                    </small>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p>{'\u3053\u306e\u6761\u4ef6\u306b\u8a72\u5f53\u3059\u308b\u6709\u52b9\u30e6\u30fc\u30b6\u30fc\u306f\u3044\u307e\u305b\u3093\u3002'}</p>
-            )}
-
-            {draftTargetUsers.length > 5 && (
-              <p className="target-preview-more">
-                {'\u307b\u304b'} {draftTargetUsers.length - 5} {'\u4eba'}
-              </p>
-            )}
-          </div>
-
-          <button type="submit" className="primary-button">
-            {'\u9023\u7d61\u3092\u4f5c\u6210'}
+            作成
           </button>
         </form>
+        {/* ▲ 追加ここまで */}
       </section>
 
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>{'\u9023\u7d61\u4e00\u89a7'}</h2>
-            <p>{'\u4f5c\u6210\u6e08\u307f\u306e\u5b66\u6821\u9023\u7d61\u3092\u8868\u793a\u3057\u307e\u3059\u3002'}</p>
+            <h2>連絡一覧</h2>
+            <p>作成済みの学校連絡を表示します。</p>
           </div>
           <button type="button" className="secondary-button" onClick={fetchMessages}>
-            {'\u518d\u8aad\u307f\u8fbc\u307f'}
+            再読み込み
           </button>
         </div>
 
         <div className="message-filter-bar">
           <label>
-            {'\u691c\u7d22'}
+            検索
             <input
               value={messageSearch}
               onChange={(event) => setMessageSearch(event.target.value)}
-              placeholder={'\u30bf\u30a4\u30c8\u30eb\u30fb\u672c\u6587\u3067\u691c\u7d22'}
+              placeholder="タイトル・本文で検索"
             />
           </label>
 
           <label>
-            {'\u72b6\u614b'}
+            状態
             <select
               value={messageStatusFilter}
               onChange={(event) => setMessageStatusFilter(event.target.value as MessageStatus | 'ALL')}
             >
-              <option value="ALL">{'\u3059\u3079\u3066'}</option>
+              <option value="ALL">すべて</option>
               <option value="DRAFT">{messageStatusLabels.DRAFT}</option>
               <option value="SENT">{messageStatusLabels.SENT}</option>
             </select>
@@ -820,15 +725,15 @@ function AdminPage() {
               setMessageStatusFilter('ALL');
             }}
           >
-            {'\u6761\u4ef6\u30af\u30ea\u30a2'}
+            条件クリア
           </button>
 
           <p>
-            {'\u8868\u793a'}: {filteredMessages.length} / {messages.length}
+            表示: {filteredMessages.length} / {messages.length}
           </p>
         </div>
 
-        {loadingMessages && <p className="muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
+        {loadingMessages && <p className="muted">読み込み中...</p>}
 
         {!loadingMessages && (
           <div className="message-list">
@@ -847,19 +752,13 @@ function AdminPage() {
                     <p>{message.body}</p>
 
                     <p className="target-role-label">
-                      {'\u5b9b\u5148'}: {getTargetLabel(message)}
+                      宛先: {getTargetLabel(message)}
                     </p>
 
-                    {message.survey && (
-                      <p className="survey-badge">
-                        {'\u30a2\u30f3\u30b1\u30fc\u30c8'}: {message.survey.question}
-                      </p>
-                    )}
-
                     <div className="read-summary">
-                      <span>{'\u5bfe\u8c61'}: {targetCount}</span>
-                      <span>{'\u65e2\u8aad'}: {readCount}</span>
-                      <span>{'\u672a\u8aad'}: {message.status === 'SENT' ? unreadCount : '-'}</span>
+                      <span>対象: {targetCount}</span>
+                      <span>既読: {readCount}</span>
+                      <span>未読: {message.status === 'SENT' ? unreadCount : '-'}</span>
                     </div>
                   </div>
 
@@ -871,18 +770,8 @@ function AdminPage() {
                       className="read-status-button"
                       onClick={() => handleShowReadStatus(message)}
                     >
-                      {'\u65e2\u8aad\u72b6\u6cc1'}
+                      既読状況
                     </button>
-
-                    {message.survey && (
-                      <button
-                        type="button"
-                        className="survey-status-button"
-                        onClick={() => handleShowSurveyStatus(message)}
-                      >
-                        {'\u30a2\u30f3\u30b1\u30fc\u30c8\u96c6\u8a08'}
-                      </button>
-                    )}
 
                     {message.status === 'DRAFT' && (
                       <>
@@ -891,7 +780,7 @@ function AdminPage() {
                           className="edit-button"
                           onClick={() => handleEditDraftMessage(message)}
                         >
-                          {'\u7de8\u96c6'}
+                          編集
                         </button>
 
                         <button
@@ -899,7 +788,7 @@ function AdminPage() {
                           className="send-button"
                           onClick={() => handleSendMessage(message)}
                         >
-                          {'\u9001\u4fe1'}
+                          送信
                         </button>
                       </>
                     )}
@@ -909,7 +798,7 @@ function AdminPage() {
                       className="delete-button"
                       onClick={() => handleDeleteMessage(message)}
                     >
-                      {'\u524a\u9664'}
+                      削除
                     </button>
                   </div>
                 </article>
@@ -917,7 +806,7 @@ function AdminPage() {
             })}
 
             {filteredMessages.length === 0 && (
-              <p className="muted">{'\u6761\u4ef6\u306b\u4e00\u81f4\u3059\u308b\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'}</p>
+              <p className="muted">条件に一致する連絡はありません。</p>
             )}
           </div>
         )}
@@ -927,11 +816,11 @@ function AdminPage() {
         <section className="card read-detail-panel">
           <div className="section-heading">
             <div>
-              <h2>{'\u65e2\u8aad\u72b6\u6cc1'}</h2>
+              <h2>既読状況</h2>
               <p>
                 {readStatusDetail
-                  ? `\u9023\u7d61\u300c${readStatusDetail.message.title}\u300d\u306e\u78ba\u8a8d\u72b6\u6cc1\u3067\u3059\u3002`
-                  : '\u65e2\u8aad\u72b6\u6cc1\u3092\u8aad\u307f\u8fbc\u3093\u3067\u3044\u307e\u3059\u3002'}
+                  ? `連絡「${readStatusDetail.message.title}」の確認状況です。`
+                  : '既読状況を読み込んでいます。'}
               </p>
             </div>
 
@@ -941,33 +830,33 @@ function AdminPage() {
                 className="secondary-button"
                 onClick={() => setReadStatusDetail(null)}
               >
-                {'\u9589\u3058\u308b'}
+                閉じる
               </button>
             )}
           </div>
 
-          {loadingReadStatus && <p className="muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
+          {loadingReadStatus && <p className="muted">読み込み中...</p>}
 
           {readStatusDetail && !loadingReadStatus && (
             <>
               <div className="read-detail-summary">
                 <div>
-                  <span>{'\u5b9b\u5148\u6761\u4ef6'}</span>
+                  <span>宛先条件</span>
                   <strong>{getTargetLabel(readStatusDetail.message)}</strong>
                 </div>
                 <div>
-                  <span>{'\u65e2\u8aad'}</span>
+                  <span>既読</span>
                   <strong>{readStatusDetail.readCount}</strong>
                 </div>
                 <div>
-                  <span>{'\u672a\u8aad'}</span>
+                  <span>未読</span>
                   <strong>{readStatusDetail.unreadCount}</strong>
                 </div>
               </div>
 
               <div className="read-detail-columns">
                 <section>
-                  <h3>{'\u65e2\u8aad\u8005'}</h3>
+                  <h3>既読者</h3>
 
                   {readStatusDetail.readUsers.length > 0 ? (
                     <ul className="read-user-list">
@@ -978,19 +867,19 @@ function AdminPage() {
                           <small>{formatUserInfo(user)}</small>
                           {user.readAt && (
                             <small>
-                              {'\u78ba\u8a8d\u65e5\u6642'}: {new Date(user.readAt).toLocaleString('ja-JP')}
+                              確認日時: {new Date(user.readAt).toLocaleString('ja-JP')}
                             </small>
                           )}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="muted">{'\u307e\u3060\u8ab0\u3082\u78ba\u8a8d\u3057\u3066\u3044\u307e\u305b\u3093\u3002'}</p>
+                    <p className="muted">まだ誰も確認していません。</p>
                   )}
                 </section>
 
                 <section>
-                  <h3>{'\u672a\u8aad\u8005'}</h3>
+                  <h3>未読者</h3>
 
                   {readStatusDetail.unreadUsers.length > 0 ? (
                     <ul className="read-user-list unread">
@@ -1003,7 +892,7 @@ function AdminPage() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="all-read-message">{'\u5168\u54e1\u304c\u78ba\u8a8d\u6e08\u307f\u3067\u3059\u3002'}</p>
+                    <p className="all-read-message">全員が確認済みです。</p>
                   )}
                 </section>
               </div>
@@ -1015,23 +904,23 @@ function AdminPage() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>{'\u30e6\u30fc\u30b6\u30fc\u8ffd\u52a0'}</h2>
-            <p>{'\u540d\u524d\u3001\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3001\u6a29\u9650\u3001\u5b66\u5e74\u3001\u6240\u5c5e\u3092\u5165\u529b\u3057\u3066\u30e6\u30fc\u30b6\u30fc\u3092\u767b\u9332\u3057\u307e\u3059\u3002'}</p>
+            <h2>ユーザー追加</h2>
+            <p>名前、メールアドレス、権限、学年、所属を入力してユーザーを登録します。</p>
           </div>
         </div>
 
         <form className="form" onSubmit={handleCreateUser}>
           <label>
-            {'\u540d\u524d'}
+            名前
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder={'\u4f8b\uff1a\u5c71\u7530 \u592a\u90ce'}
+              placeholder="例：山田 太郎"
             />
           </label>
 
           <label>
-            {'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9'}
+            メールアドレス
             <input
               value={email}
               onChange={(event) => setEmail(event.target.value)}
@@ -1040,7 +929,7 @@ function AdminPage() {
           </label>
 
           <label>
-            {'\u6a29\u9650'}
+            権限
             <select
               value={role}
               onChange={(event) => setRole(event.target.value as UserRole)}
@@ -1054,12 +943,12 @@ function AdminPage() {
           </label>
 
           <label>
-            {'\u5b66\u5e74'}
+            学年
             <select
               value={userGrade}
               onChange={(event) => setUserGrade(event.target.value)}
             >
-              <option value="">{'\u672a\u6307\u5b9a'}</option>
+              <option value="">未指定</option>
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -1069,7 +958,7 @@ function AdminPage() {
           </label>
 
           <label>
-            {'\u6240\u5c5e'}
+            所属
             <select
               value={department}
               onChange={(event) => setDepartment(event.target.value)}
@@ -1083,7 +972,7 @@ function AdminPage() {
           </label>
 
           <button type="submit" className="primary-button">
-            {'\u8ffd\u52a0'}
+            追加
           </button>
         </form>
       </section>
@@ -1091,31 +980,31 @@ function AdminPage() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>{'\u30e6\u30fc\u30b6\u30fc\u4e00\u89a7'}</h2>
-            <p>{'\u73fe\u5728\u767b\u9332\u3055\u308c\u3066\u3044\u308b\u30e6\u30fc\u30b6\u30fc\u3092\u8868\u793a\u3057\u307e\u3059\u3002'}</p>
+            <h2>ユーザー一覧</h2>
+            <p>現在登録されているユーザーを表示します。</p>
           </div>
           <button type="button" className="secondary-button" onClick={fetchUsers}>
-            {'\u518d\u8aad\u307f\u8fbc\u307f'}
+            再読み込み
           </button>
         </div>
 
         <div className="user-filter-bar">
           <label>
-            {'\u691c\u7d22'}
+            検索
             <input
               value={userSearch}
               onChange={(event) => setUserSearch(event.target.value)}
-              placeholder={'\u540d\u524d\u30fb\u30e1\u30fc\u30eb\u30fb\u6240\u5c5e\u3067\u691c\u7d22'}
+              placeholder="名前・メール・所属で検索"
             />
           </label>
 
           <label>
-            {'\u6a29\u9650'}
+            権限
             <select
               value={userRoleFilter}
               onChange={(event) => setUserRoleFilter(event.target.value as UserRole | 'ALL')}
             >
-              <option value="ALL">{'\u3059\u3079\u3066'}</option>
+              <option value="ALL">すべて</option>
               <option value="STUDENT">{roleLabels.STUDENT}</option>
               <option value="PARENT">{roleLabels.PARENT}</option>
               <option value="TEACHER">{roleLabels.TEACHER}</option>
@@ -1125,14 +1014,14 @@ function AdminPage() {
           </label>
 
           <label>
-            {'\u72b6\u614b'}
+            状態
             <select
               value={userActiveFilter}
               onChange={(event) => setUserActiveFilter(event.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')}
             >
-              <option value="ALL">{'\u3059\u3079\u3066'}</option>
-              <option value="ACTIVE">{'\u6709\u52b9'}</option>
-              <option value="INACTIVE">{'\u7121\u52b9'}</option>
+              <option value="ALL">すべて</option>
+              <option value="ACTIVE">有効</option>
+              <option value="INACTIVE">無効</option>
             </select>
           </label>
 
@@ -1145,15 +1034,15 @@ function AdminPage() {
               setUserActiveFilter('ALL');
             }}
           >
-            {'\u6761\u4ef6\u30af\u30ea\u30a2'}
+            条件クリア
           </button>
 
           <p>
-            {'\u8868\u793a'}: {filteredUsers.length} / {users.length}
+            表示: {filteredUsers.length} / {users.length}
           </p>
         </div>
 
-        {loadingUsers && <p className="muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
+        {loadingUsers && <p className="muted">読み込み中...</p>}
 
         {!loadingUsers && (
           <div className="table-wrapper">
@@ -1161,14 +1050,14 @@ function AdminPage() {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>{'\u540d\u524d'}</th>
-                  <th>{'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9'}</th>
-                  <th>{'\u6a29\u9650'}</th>
-                  <th>{'\u5b66\u5e74'}</th>
-                  <th>{'\u6240\u5c5e'}</th>
-                  <th>{'\u72b6\u614b'}</th>
-                  <th>{'\u4f5c\u6210\u65e5\u6642'}</th>
-                  <th>{'\u64cd\u4f5c'}</th>
+                  <th>名前</th>
+                  <th>メールアドレス</th>
+                  <th>権限</th>
+                  <th>学年</th>
+                  <th>所属</th>
+                  <th>状態</th>
+                  <th>作成日時</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -1184,7 +1073,7 @@ function AdminPage() {
                     </td>
                     <td>{user.grade ?? '-'}</td>
                     <td>{user.department || '-'}</td>
-                    <td>{user.isActive ? '\u6709\u52b9' : '\u7121\u52b9'}</td>
+                    <td>{user.isActive ? '有効' : '無効'}</td>
                     <td>{new Date(user.createdAt).toLocaleString('ja-JP')}</td>
                     <td>
                       <div className="user-action-buttons">
@@ -1193,7 +1082,7 @@ function AdminPage() {
                           className="edit-button"
                           onClick={() => handleEditUser(user)}
                         >
-                          {'\u7de8\u96c6'}
+                          編集
                         </button>
 
                         {user.isActive ? (
@@ -1202,7 +1091,7 @@ function AdminPage() {
                             className="deactivate-button"
                             onClick={() => handleDeleteUser(user)}
                           >
-                            {'\u7121\u52b9\u5316'}
+                            無効化
                           </button>
                         ) : (
                           <button
@@ -1210,7 +1099,7 @@ function AdminPage() {
                             className="activate-button"
                             onClick={() => handleActivateUser(user)}
                           >
-                            {'\u6709\u52b9\u5316'}
+                            有効化
                           </button>
                         )}
                       </div>
@@ -1222,7 +1111,7 @@ function AdminPage() {
 
             {filteredUsers.length === 0 && (
               <p className="muted user-empty-message">
-                {'\u6761\u4ef6\u306b\u4e00\u81f4\u3059\u308b\u30e6\u30fc\u30b6\u30fc\u306f\u3044\u307e\u305b\u3093\u3002'}
+                条件に一致するユーザーはいません。
               </p>
             )}
           </div>
