@@ -256,6 +256,53 @@ function AdminPage() {
     }
   }
 
+  async function handleShowReadStatus(message: Message) {
+    setNotice('');
+    setError('');
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}/read-status`);
+
+      if (!response.ok) {
+        throw new Error('\u65e2\u8aad\u72b6\u6cc1\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+      }
+
+      const data = await response.json();
+
+      const readUsers = (data.readUsers ?? []) as Array<{
+        name: string;
+        email: string;
+        readAt?: string;
+      }>;
+
+      const unreadUsers = (data.unreadUsers ?? []) as Array<{
+        name: string;
+        email: string;
+      }>;
+
+      const readText =
+        readUsers.length > 0
+          ? readUsers
+              .map((user) => `\u30fb${user.name} (${user.email})`)
+              .join('\n')
+          : '\u306a\u3057';
+
+      const unreadText =
+        unreadUsers.length > 0
+          ? unreadUsers
+              .map((user) => `\u30fb${user.name} (${user.email})`)
+              .join('\n')
+          : '\u306a\u3057';
+
+      window.alert(
+        `\u9023\u7d61: ${data.message.title}\n\n` +
+          `\u65e2\u8aad: ${data.readCount}\n${readText}\n\n` +
+          `\u672a\u8aad: ${data.unreadCount}\n${unreadText}`,
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    }
+  }
   async function handleDeleteMessage(message: Message) {
     const ok = window.confirm(`${message.title} \u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f`);
 
@@ -386,6 +433,14 @@ function AdminPage() {
 
                   <div className="message-actions">
                     <time>{new Date(message.createdAt).toLocaleString('ja-JP')}</time>
+
+                    <button
+                      type="button"
+                      className="read-status-button"
+                      onClick={() => handleShowReadStatus(message)}
+                    >
+                      {'\u65e2\u8aad\u72b6\u6cc1'}
+                    </button>
 
                     {message.status === 'DRAFT' && (
                       <button

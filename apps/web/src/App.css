@@ -1550,3 +1550,18 @@ textarea:focus {
   background: #eef2ff;
   color: #1e3a8a;
 }
+
+.read-status-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #1e3a8a;
+  background: #dbeafe;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.read-status-button:hover {
+  background: #bfdbfe;
+}
