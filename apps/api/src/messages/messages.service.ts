@@ -84,7 +84,7 @@ export class MessagesService {
     });
 
     if (!message) {
-      throw new NotFoundException('連絡が見つかりません');
+      throw new NotFoundException('Message not found');
     }
 
     const users = await this.prisma.user.findMany({
