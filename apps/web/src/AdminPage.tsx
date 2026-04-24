@@ -655,6 +655,36 @@ function AdminPage() {
           </div>
 
           <button type="submit" className="primary-button">
+
+          <div className="target-preview">
+            <div className="target-preview-main">
+              <span>{'\u5bfe\u8c61\u4e88\u5b9a'}</span>
+              <strong>{draftTargetUsers.length}{'\u4eba'}</strong>
+            </div>
+
+            {draftTargetUsers.length > 0 ? (
+              <ul>
+                {draftTargetUsers.slice(0, 5).map((user) => (
+                  <li key={user.id}>
+                    {user.name}
+                    <small>
+                      {roleLabels[user.role]} / {user.grade ? `${user.grade}\u5e74` : '\u5b66\u5e74\u672a\u6307\u5b9a'} / {user.department || '\u6240\u5c5e\u672a\u6307\u5b9a'}
+                    </small>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>{'\u3053\u306e\u6761\u4ef6\u306b\u8a72\u5f53\u3059\u308b\u6709\u52b9\u30e6\u30fc\u30b6\u30fc\u306f\u3044\u307e\u305b\u3093\u3002'}</p>
+            )}
+
+            {draftTargetUsers.length > 5 && (
+              <p className="target-preview-more">
+                {'\u307b\u304b'} {draftTargetUsers.length - 5} {'\u4eba'}
+              </p>
+            )}
+          </div>
+
+          <button type="submit" className="primary-button">
             {'\u9023\u7d61\u3092\u4f5c\u6210'}
           </button>
         </form>

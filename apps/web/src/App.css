@@ -1788,3 +1788,57 @@ textarea:focus {
   gap: 8px;
   flex-wrap: wrap;
 }
+
+.target-preview {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid #bfdbfe;
+  border-radius: 16px;
+  background: #eff6ff;
+}
+
+.target-preview-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.target-preview-main span {
+  color: #1e3a8a;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.target-preview-main strong {
+  color: #1e3a8a;
+  font-size: 24px;
+}
+
+.target-preview ul {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.target-preview li {
+  display: grid;
+  gap: 2px;
+  padding: 10px;
+  border-radius: 12px;
+  background: white;
+  font-weight: 800;
+}
+
+.target-preview small,
+.target-preview p {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.target-preview-more {
+  margin: 0;
+}
