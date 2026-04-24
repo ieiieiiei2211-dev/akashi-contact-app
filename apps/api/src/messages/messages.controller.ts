@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { MessagesService } from './messages.service';
 
@@ -14,6 +14,11 @@ export class MessagesController {
   @Post()
   create(@Body() createMessageDto: CreateMessageDto) {
     return this.messagesService.create(createMessageDto);
+  }
+
+  @Patch(':id/send')
+  send(@Param('id', ParseIntPipe) id: number) {
+    return this.messagesService.send(id);
   }
 
   @Delete(':id')

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { MessageStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
 
@@ -19,6 +20,15 @@ export class MessagesService {
       data: {
         title: createMessageDto.title,
         body: createMessageDto.body,
+      },
+    });
+  }
+
+  send(id: number) {
+    return this.prisma.message.update({
+      where: { id },
+      data: {
+        status: MessageStatus.SENT,
       },
     });
   }
