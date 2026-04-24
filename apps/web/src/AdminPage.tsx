@@ -36,6 +36,32 @@ type Message = {
   readStatuses?: ReadStatus[];
 };
 
+type ReadStatusDetailUser = {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  grade?: number | null;
+  department?: string | null;
+  readAt?: string;
+};
+
+type ReadStatusDetail = {
+  message: {
+    id: number;
+    title: string;
+    status: MessageStatus;
+    targetRole?: UserRole | null;
+    targetGrade?: number | null;
+    targetDepartment?: string | null;
+    createdAt: string;
+  };
+  readCount: number;
+  unreadCount: number;
+  readUsers: ReadStatusDetailUser[];
+  unreadUsers: ReadStatusDetailUser[];
+};
+
 const roleLabels: Record<UserRole, string> = {
   STUDENT: '\u751f\u5f92',
   PARENT: '\u4fdd\u8b77\u8005',
@@ -76,6 +102,9 @@ function AdminPage() {
 
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(true);
+  const [loadingReadStatus, setLoadingReadStatus] = useState(false);
+  const [readStatusDetail, setReadStatusDetail] = useState<ReadStatusDetail | null>(null);
+
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
 
@@ -292,6 +321,7 @@ function AdminPage() {
   async function handleShowReadStatus(message: Message) {
     setNotice('');
     setError('');
+    setLoadingReadStatus(true);
 
     try {
       const response = await fetch(`http://localhost:3000/messages/${message.id}/read-status`);
@@ -300,35 +330,12 @@ function AdminPage() {
         throw new Error('\u65e2\u8aad\u72b6\u6cc1\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
-      const data = await response.json();
-
-      const readUsers = (data.readUsers ?? []) as Array<{
-        name: string;
-        email: string;
-      }>;
-
-      const unreadUsers = (data.unreadUsers ?? []) as Array<{
-        name: string;
-        email: string;
-      }>;
-
-      const readText =
-        readUsers.length > 0
-          ? readUsers.map((user) => `\u30fb${user.name} (${user.email})`).join('\n')
-          : '\u306a\u3057';
-
-      const unreadText =
-        unreadUsers.length > 0
-          ? unreadUsers.map((user) => `\u30fb${user.name} (${user.email})`).join('\n')
-          : '\u306a\u3057';
-
-      window.alert(
-        `\u9023\u7d61: ${data.message.title}\n\n` +
-          `\u65e2\u8aad: ${data.readCount}\n${readText}\n\n` +
-          `\u672a\u8aad: ${data.unreadCount}\n${unreadText}`,
-      );
+      const data: ReadStatusDetail = await response.json();
+      setReadStatusDetail(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    } finally {
+      setLoadingReadStatus(false);
     }
   }
 
@@ -349,6 +356,10 @@ function AdminPage() {
 
       if (!response.ok) {
         throw new Error('\u9023\u7d61\u306e\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+      }
+
+      if (readStatusDetail?.message.id === message.id) {
+        setReadStatusDetail(null);
       }
 
       setNotice('\u9023\u7d61\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
@@ -389,12 +400,19 @@ function AdminPage() {
     ).length;
   }
 
-  function getTargetLabel(message: Message) {
+  function getTargetLabel(message: Message | ReadStatusDetail['message']) {
     const roleText = message.targetRole ? roleLabels[message.targetRole] : '\u5168\u54e1';
     const gradeText = message.targetGrade ? `${message.targetGrade}\u5e74` : '\u5168\u5b66\u5e74';
     const departmentText = message.targetDepartment || '\u5168\u6240\u5c5e';
 
     return `${roleText} / ${gradeText} / ${departmentText}`;
+  }
+
+  function formatUserInfo(user: ReadStatusDetailUser) {
+    const gradeText = user.grade ? `${user.grade}\u5e74` : '\u5b66\u5e74\u672a\u6307\u5b9a';
+    const departmentText = user.department || '\u6240\u5c5e\u672a\u6307\u5b9a';
+
+    return `${roleLabels[user.role]} / ${gradeText} / ${departmentText}`;
   }
 
   return (
@@ -590,6 +608,95 @@ function AdminPage() {
           </div>
         )}
       </section>
+
+      {(loadingReadStatus || readStatusDetail) && (
+        <section className="card read-detail-panel">
+          <div className="section-heading">
+            <div>
+              <h2>{'\u65e2\u8aad\u72b6\u6cc1'}</h2>
+              <p>
+                {readStatusDetail
+                  ? `\u9023\u7d61\u300c${readStatusDetail.message.title}\u300d\u306e\u78ba\u8a8d\u72b6\u6cc1\u3067\u3059\u3002`
+                  : '\u65e2\u8aad\u72b6\u6cc1\u3092\u8aad\u307f\u8fbc\u3093\u3067\u3044\u307e\u3059\u3002'}
+              </p>
+            </div>
+
+            {readStatusDetail && (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setReadStatusDetail(null)}
+              >
+                {'\u9589\u3058\u308b'}
+              </button>
+            )}
+          </div>
+
+          {loadingReadStatus && <p className="muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
+
+          {readStatusDetail && !loadingReadStatus && (
+            <>
+              <div className="read-detail-summary">
+                <div>
+                  <span>{'\u5b9b\u5148\u6761\u4ef6'}</span>
+                  <strong>{getTargetLabel(readStatusDetail.message)}</strong>
+                </div>
+                <div>
+                  <span>{'\u65e2\u8aad'}</span>
+                  <strong>{readStatusDetail.readCount}</strong>
+                </div>
+                <div>
+                  <span>{'\u672a\u8aad'}</span>
+                  <strong>{readStatusDetail.unreadCount}</strong>
+                </div>
+              </div>
+
+              <div className="read-detail-columns">
+                <section>
+                  <h3>{'\u65e2\u8aad\u8005'}</h3>
+
+                  {readStatusDetail.readUsers.length > 0 ? (
+                    <ul className="read-user-list">
+                      {readStatusDetail.readUsers.map((user) => (
+                        <li key={`read-${user.id}`}>
+                          <strong>{user.name}</strong>
+                          <span>{user.email}</span>
+                          <small>{formatUserInfo(user)}</small>
+                          {user.readAt && (
+                            <small>
+                              {'\u78ba\u8a8d\u65e5\u6642'}: {new Date(user.readAt).toLocaleString('ja-JP')}
+                            </small>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="muted">{'\u307e\u3060\u8ab0\u3082\u78ba\u8a8d\u3057\u3066\u3044\u307e\u305b\u3093\u3002'}</p>
+                  )}
+                </section>
+
+                <section>
+                  <h3>{'\u672a\u8aad\u8005'}</h3>
+
+                  {readStatusDetail.unreadUsers.length > 0 ? (
+                    <ul className="read-user-list unread">
+                      {readStatusDetail.unreadUsers.map((user) => (
+                        <li key={`unread-${user.id}`}>
+                          <strong>{user.name}</strong>
+                          <span>{user.email}</span>
+                          <small>{formatUserInfo(user)}</small>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="all-read-message">{'\u5168\u54e1\u304c\u78ba\u8a8d\u6e08\u307f\u3067\u3059\u3002'}</p>
+                  )}
+                </section>
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
       <section className="card">
         <div className="section-heading">
