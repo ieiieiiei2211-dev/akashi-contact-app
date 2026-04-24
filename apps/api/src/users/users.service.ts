@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 
@@ -10,14 +10,27 @@ export class UsersService {
     return this.prisma.user.findMany();
   }
 
-  create(createUserDto: CreateUserDto) {
-    return this.prisma.user.create({
-      data: {
-        name: createUserDto.name,
-        email: createUserDto.email,
-        role: createUserDto.role,
-      },
-    });
+  async create(createUserDto: CreateUserDto) {
+    try {
+      return await this.prisma.user.create({
+        data: {
+          name: createUserDto.name,
+          email: createUserDto.email,
+          role: createUserDto.role,
+        },
+      });
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('このメールアドレスはすでに登録されています');
+      }
+
+      throw error;
+    }
   }
 
   remove(id: number) {

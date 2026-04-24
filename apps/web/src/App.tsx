@@ -14,11 +14,45 @@ type User = {
 };
 
 const roleLabels: Record<UserRole, string> = {
-  STUDENT: '生徒',
-  PARENT: '保護者',
-  TEACHER: '教員',
-  STAFF: '事務',
-  ADMIN: '管理者',
+  STUDENT: '\u751f\u5f92',
+  PARENT: '\u4fdd\u8b77\u8005',
+  TEACHER: '\u6559\u54e1',
+  STAFF: '\u4e8b\u52d9',
+  ADMIN: '\u7ba1\u7406\u8005',
+};
+
+const text = {
+  appName: 'Akashi Contact App',
+  title: '\u5b66\u6821\u9023\u7d61\u30a2\u30d7\u30ea \u7ba1\u7406\u753b\u9762',
+  subtitle: '\u751f\u5f92\u30fb\u4fdd\u8b77\u8005\u30fb\u6559\u8077\u54e1\u306e\u30e6\u30fc\u30b6\u30fc\u60c5\u5831\u3092\u7ba1\u7406\u3057\u307e\u3059\u3002',
+  registeredUsers: '\u767b\u9332\u30e6\u30fc\u30b6\u30fc',
+  activeUsers: '\u6709\u52b9\u30e6\u30fc\u30b6\u30fc',
+  students: '\u751f\u5f92',
+  staffUsers: '\u6559\u8077\u54e1',
+  addUser: '\u30e6\u30fc\u30b6\u30fc\u8ffd\u52a0',
+  addUserDescription: '\u540d\u524d\u3001\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3001\u6a29\u9650\u3092\u5165\u529b\u3057\u3066\u30e6\u30fc\u30b6\u30fc\u3092\u767b\u9332\u3057\u307e\u3059\u3002',
+  name: '\u540d\u524d',
+  email: '\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9',
+  role: '\u6a29\u9650',
+  add: '\u8ffd\u52a0',
+  userList: '\u30e6\u30fc\u30b6\u30fc\u4e00\u89a7',
+  userListDescription: '\u73fe\u5728\u767b\u9332\u3055\u308c\u3066\u3044\u308b\u30e6\u30fc\u30b6\u30fc\u3092\u8868\u793a\u3057\u307e\u3059\u3002',
+  reload: '\u518d\u8aad\u307f\u8fbc\u307f',
+  loading: '\u8aad\u307f\u8fbc\u307f\u4e2d...',
+  status: '\u72b6\u614b',
+  createdAt: '\u4f5c\u6210\u65e5\u6642',
+  action: '\u64cd\u4f5c',
+  active: '\u6709\u52b9',
+  delete: '\u524a\u9664',
+  added: '\u30e6\u30fc\u30b6\u30fc\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f',
+  deleted: '\u30e6\u30fc\u30b6\u30fc\u3092\u524a\u9664\u3057\u307e\u3057\u305f',
+  fetchFailed: '\u30e6\u30fc\u30b6\u30fc\u4e00\u89a7\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f',
+  createFailed: '\u30e6\u30fc\u30b6\u30fc\u306e\u4f5c\u6210\u306b\u5931\u6557\u3057\u307e\u3057\u305f',
+  deleteFailed: '\u30e6\u30fc\u30b6\u30fc\u306e\u524a\u9664\u306b\u5931\u6557\u3057\u307e\u3057\u305f',
+  unknownError: '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f',
+  deleteConfirm: '\u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f',
+  namePlaceholder: '\u4f8b\uff1a\u5c71\u7530 \u592a\u90ce',
+  emailPlaceholder: '\u4f8b\uff1astudent@example.com',
 };
 
 function App() {
@@ -59,13 +93,13 @@ function App() {
       const response = await fetch('http://localhost:3000/users');
 
       if (!response.ok) {
-        throw new Error('ユーザー一覧の取得に失敗しました');
+        throw new Error(text.fetchFailed);
       }
 
       const data: User[] = await response.json();
       setUsers(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : text.unknownError);
     } finally {
       setLoading(false);
     }
@@ -98,7 +132,9 @@ function App() {
         const errorData = await response.json();
         const errorMessage = Array.isArray(errorData.message)
           ? errorData.message.join(' / ')
-          : 'ユーザーの作成に失敗しました';
+          : typeof errorData.message === 'string'
+            ? errorData.message
+            : text.createFailed;
 
         throw new Error(errorMessage);
       }
@@ -106,16 +142,16 @@ function App() {
       setName('');
       setEmail('');
       setRole('STUDENT');
-      setMessage('ユーザーを追加しました');
+      setMessage(text.added);
 
       await fetchUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : text.unknownError);
     }
   }
 
   async function handleDelete(user: User) {
-    const ok = window.confirm(`${user.name} を削除しますか？`);
+    const ok = window.confirm(`${user.name} ${text.deleteConfirm}`);
 
     if (!ok) {
       return;
@@ -130,13 +166,13 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error('ユーザーの削除に失敗しました');
+        throw new Error(text.deleteFailed);
       }
 
-      setMessage('ユーザーを削除しました');
+      setMessage(text.deleted);
       await fetchUsers();
     } catch (err) {
-      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+      setError(err instanceof Error ? err.message : text.unknownError);
     }
   }
 
@@ -144,29 +180,27 @@ function App() {
     <main className="page">
       <header className="header">
         <div>
-          <p className="eyebrow">Akashi Contact App</p>
-          <h1>学校連絡アプリ 管理画面</h1>
-          <p className="header-text">
-            生徒・保護者・教職員のユーザー情報を管理します。
-          </p>
+          <p className="eyebrow">{text.appName}</p>
+          <h1>{text.title}</h1>
+          <p className="header-text">{text.subtitle}</p>
         </div>
       </header>
 
       <section className="summary-grid">
         <div className="summary-card">
-          <span className="summary-label">登録ユーザー</span>
+          <span className="summary-label">{text.registeredUsers}</span>
           <strong>{users.length}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">有効ユーザー</span>
+          <span className="summary-label">{text.activeUsers}</span>
           <strong>{activeCount}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">生徒</span>
+          <span className="summary-label">{text.students}</span>
           <strong>{roleCounts.STUDENT}</strong>
         </div>
         <div className="summary-card">
-          <span className="summary-label">教職員</span>
+          <span className="summary-label">{text.staffUsers}</span>
           <strong>{roleCounts.TEACHER + roleCounts.STAFF + roleCounts.ADMIN}</strong>
         </div>
       </section>
@@ -174,46 +208,46 @@ function App() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>ユーザー追加</h2>
-            <p>名前、メールアドレス、権限を入力してユーザーを登録します。</p>
+            <h2>{text.addUser}</h2>
+            <p>{text.addUserDescription}</p>
           </div>
         </div>
 
         <form className="form" onSubmit={handleSubmit}>
           <label>
-            名前
+            {text.name}
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="例：山田 太郎"
+              placeholder={text.namePlaceholder}
             />
           </label>
 
           <label>
-            メールアドレス
+            {text.email}
             <input
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              placeholder="例：student@example.com"
+              placeholder={text.emailPlaceholder}
             />
           </label>
 
           <label>
-            権限
+            {text.role}
             <select
               value={role}
               onChange={(event) => setRole(event.target.value as UserRole)}
             >
-              <option value="STUDENT">生徒</option>
-              <option value="PARENT">保護者</option>
-              <option value="TEACHER">教員</option>
-              <option value="STAFF">事務</option>
-              <option value="ADMIN">管理者</option>
+              <option value="STUDENT">{roleLabels.STUDENT}</option>
+              <option value="PARENT">{roleLabels.PARENT}</option>
+              <option value="TEACHER">{roleLabels.TEACHER}</option>
+              <option value="STAFF">{roleLabels.STAFF}</option>
+              <option value="ADMIN">{roleLabels.ADMIN}</option>
             </select>
           </label>
 
           <button type="submit" className="primary-button">
-            追加
+            {text.add}
           </button>
         </form>
 
@@ -224,15 +258,15 @@ function App() {
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>ユーザー一覧</h2>
-            <p>現在登録されているユーザーを表示します。</p>
+            <h2>{text.userList}</h2>
+            <p>{text.userListDescription}</p>
           </div>
           <button type="button" className="secondary-button" onClick={fetchUsers}>
-            再読み込み
+            {text.reload}
           </button>
         </div>
 
-        {loading && <p className="muted">読み込み中...</p>}
+        {loading && <p className="muted">{text.loading}</p>}
 
         {!loading && !error && (
           <div className="table-wrapper">
@@ -240,12 +274,12 @@ function App() {
               <thead>
                 <tr>
                   <th>ID</th>
-                  <th>名前</th>
-                  <th>メールアドレス</th>
-                  <th>権限</th>
-                  <th>状態</th>
-                  <th>作成日時</th>
-                  <th>操作</th>
+                  <th>{text.name}</th>
+                  <th>{text.email}</th>
+                  <th>{text.role}</th>
+                  <th>{text.status}</th>
+                  <th>{text.createdAt}</th>
+                  <th>{text.action}</th>
                 </tr>
               </thead>
               <tbody>
@@ -259,7 +293,7 @@ function App() {
                         {roleLabels[user.role]}
                       </span>
                     </td>
-                    <td>{user.isActive ? '有効' : '無効'}</td>
+                    <td>{user.isActive ? text.active : '-'}</td>
                     <td>{new Date(user.createdAt).toLocaleString('ja-JP')}</td>
                     <td>
                       <button
@@ -267,7 +301,7 @@ function App() {
                         className="delete-button"
                         onClick={() => handleDelete(user)}
                       >
-                        削除
+                        {text.delete}
                       </button>
                     </td>
                   </tr>
