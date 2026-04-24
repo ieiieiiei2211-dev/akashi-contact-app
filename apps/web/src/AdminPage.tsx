@@ -9,6 +9,8 @@ type User = {
   name: string;
   email: string;
   role: UserRole;
+  grade?: number | null;
+  department?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -52,6 +54,8 @@ function AdminPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<UserRole>('STUDENT');
+  const [userGrade, setUserGrade] = useState('');
+  const [department, setDepartment] = useState('');
 
   const [messageTitle, setMessageTitle] = useState('');
   const [messageBody, setMessageBody] = useState('');
@@ -140,7 +144,13 @@ function AdminPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, role }),
+        body: JSON.stringify({
+          name,
+          email,
+          role,
+          grade: userGrade ? Number(userGrade) : undefined,
+          department: department || undefined,
+        }),
       });
 
       if (!response.ok) {
@@ -157,6 +167,8 @@ function AdminPage() {
       setName('');
       setEmail('');
       setRole('STUDENT');
+      setUserGrade('');
+      setDepartment('');
       setNotice('\u30e6\u30fc\u30b6\u30fc\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
 
       await fetchUsers();
@@ -535,6 +547,30 @@ function AdminPage() {
             </select>
           </label>
 
+          <label>
+            {'\u5b66\u5e74'}
+            <select
+              value={userGrade}
+              onChange={(event) => setUserGrade(event.target.value)}
+            >
+              <option value="">{'\u672a\u6307\u5b9a'}</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </label>
+
+          <label>
+            {'\u6240\u5c5e'}
+            <input
+              value={department}
+              onChange={(event) => setDepartment(event.target.value)}
+              placeholder="Mechanical Engineering"
+            />
+          </label>
+
           <button type="submit" className="primary-button">
             {'\u8ffd\u52a0'}
           </button>
@@ -563,6 +599,8 @@ function AdminPage() {
                   <th>{'\u540d\u524d'}</th>
                   <th>{'\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9'}</th>
                   <th>{'\u6a29\u9650'}</th>
+                  <th>{'\u5b66\u5e74'}</th>
+                  <th>{'\u6240\u5c5e'}</th>
                   <th>{'\u72b6\u614b'}</th>
                   <th>{'\u4f5c\u6210\u65e5\u6642'}</th>
                   <th>{'\u64cd\u4f5c'}</th>

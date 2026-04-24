@@ -7,7 +7,11 @@ export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
   findAll() {
-    return this.prisma.user.findMany();
+    return this.prisma.user.findMany({
+      orderBy: {
+        id: 'asc',
+      },
+    });
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -17,6 +21,8 @@ export class UsersService {
           name: createUserDto.name,
           email: createUserDto.email,
           role: createUserDto.role,
+          grade: createUserDto.grade ?? null,
+          department: createUserDto.department ?? null,
         },
       });
     } catch (error) {
