@@ -34,9 +34,25 @@ export class MessagesService {
         status: MessageStatus.SENT,
         ...(user
           ? {
-              OR: [
-                { targetRole: null },
-                { targetRole: user.role },
+              AND: [
+                {
+                  OR: [
+                    { targetRole: null },
+                    { targetRole: user.role },
+                  ],
+                },
+                {
+                  OR: [
+                    { targetGrade: null },
+                    { targetGrade: user.grade },
+                  ],
+                },
+                {
+                  OR: [
+                    { targetDepartment: null },
+                    { targetDepartment: user.department },
+                  ],
+                },
               ],
             }
           : {}),
@@ -56,6 +72,8 @@ export class MessagesService {
         title: createMessageDto.title,
         body: createMessageDto.body,
         targetRole: createMessageDto.targetRole ?? null,
+        targetGrade: createMessageDto.targetGrade ?? null,
+        targetDepartment: createMessageDto.targetDepartment ?? null,
       },
     });
   }
@@ -109,11 +127,9 @@ export class MessagesService {
     const users = await this.prisma.user.findMany({
       where: {
         isActive: true,
-        ...(message.targetRole
-          ? {
-              role: message.targetRole,
-            }
-          : {}),
+        ...(message.targetRole ? { role: message.targetRole } : {}),
+        ...(message.targetGrade ? { grade: message.targetGrade } : {}),
+        ...(message.targetDepartment ? { department: message.targetDepartment } : {}),
       },
       orderBy: {
         id: 'asc',
@@ -133,6 +149,8 @@ export class MessagesService {
         name: readStatus.user.name,
         email: readStatus.user.email,
         role: readStatus.user.role,
+        grade: readStatus.user.grade,
+        department: readStatus.user.department,
         readAt: readStatus.readAt,
       }));
 
@@ -143,6 +161,8 @@ export class MessagesService {
         name: user.name,
         email: user.email,
         role: user.role,
+        grade: user.grade,
+        department: user.department,
       }));
 
     return {
@@ -151,6 +171,8 @@ export class MessagesService {
         title: message.title,
         status: message.status,
         targetRole: message.targetRole,
+        targetGrade: message.targetGrade,
+        targetDepartment: message.targetDepartment,
         createdAt: message.createdAt,
       },
       readCount: readUsers.length,
