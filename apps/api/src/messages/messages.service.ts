@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { MessageStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 
 @Injectable()
 export class MessagesService {
@@ -36,16 +37,10 @@ export class MessagesService {
           ? {
               AND: [
                 {
-                  OR: [
-                    { targetRole: null },
-                    { targetRole: user.role },
-                  ],
+                  OR: [{ targetRole: null }, { targetRole: user.role }],
                 },
                 {
-                  OR: [
-                    { targetGrade: null },
-                    { targetGrade: user.grade },
-                  ],
+                  OR: [{ targetGrade: null }, { targetGrade: user.grade }],
                 },
                 {
                   OR: [
@@ -74,6 +69,40 @@ export class MessagesService {
         targetRole: createMessageDto.targetRole ?? null,
         targetGrade: createMessageDto.targetGrade ?? null,
         targetDepartment: createMessageDto.targetDepartment ?? null,
+      },
+    });
+  }
+
+  async update(id: number, updateMessageDto: UpdateMessageDto) {
+    const message = await this.prisma.message.findUnique({
+      where: { id },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    if (message.status === MessageStatus.SENT) {
+      throw new BadRequestException('送信済みの連絡は編集できません');
+    }
+
+    return this.prisma.message.update({
+      where: { id },
+      data: {
+        title: updateMessageDto.title,
+        body: updateMessageDto.body,
+        targetRole:
+          updateMessageDto.targetRole === undefined
+            ? undefined
+            : updateMessageDto.targetRole,
+        targetGrade:
+          updateMessageDto.targetGrade === undefined
+            ? undefined
+            : updateMessageDto.targetGrade,
+        targetDepartment:
+          updateMessageDto.targetDepartment === undefined
+            ? undefined
+            : updateMessageDto.targetDepartment,
       },
     });
   }
@@ -129,7 +158,9 @@ export class MessagesService {
         isActive: true,
         ...(message.targetRole ? { role: message.targetRole } : {}),
         ...(message.targetGrade ? { grade: message.targetGrade } : {}),
-        ...(message.targetDepartment ? { department: message.targetDepartment } : {}),
+        ...(message.targetDepartment
+          ? { department: message.targetDepartment }
+          : {}),
       },
       orderBy: {
         id: 'asc',

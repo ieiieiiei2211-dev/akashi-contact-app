@@ -1,6 +1,18 @@
-import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { ReadMessageDto } from './dto/read-message.dto';
+import { UpdateMessageDto } from './dto/update-message.dto';
 import { MessagesService } from './messages.service';
 
 @Controller('messages')
@@ -40,6 +52,14 @@ export class MessagesController {
   @Patch(':id/send')
   send(@Param('id', ParseIntPipe) id: number) {
     return this.messagesService.send(id);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateMessageDto: UpdateMessageDto,
+  ) {
+    return this.messagesService.update(id, updateMessageDto);
   }
 
   @Post(':id/read')
