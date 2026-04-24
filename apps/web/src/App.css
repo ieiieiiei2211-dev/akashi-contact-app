@@ -1752,3 +1752,33 @@ textarea:focus {
 .edit-button:hover {
   background: #fde68a;
 }
+
+.deactivate-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #92400e;
+  background: #fef3c7;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.deactivate-button:hover {
+  background: #fde68a;
+}
+
+.activate-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #166534;
+  background: #dcfce7;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.activate-button:hover {
+  background: #bbf7d0;
+}

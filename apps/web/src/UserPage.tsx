@@ -31,6 +31,7 @@ type User = {
   role: UserRole;
   grade?: number | null;
   department?: string | null;
+  isActive: boolean;
 };
 
 const roleLabels: Record<UserRole, string> = {
@@ -61,8 +62,9 @@ function UserPage() {
     }
 
     const data: User[] = await response.json();
-    setUsers(data);
-    return data;
+    const activeUsers = data.filter((user) => user.isActive);
+    setUsers(activeUsers);
+    return activeUsers;
   }
 
   async function fetchSentMessages(userId: number) {
