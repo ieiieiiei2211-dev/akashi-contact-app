@@ -1,6 +1,7 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -23,6 +24,46 @@ export class UsersService {
           role: createUserDto.role,
           grade: createUserDto.grade ?? null,
           department: createUserDto.department ?? null,
+        },
+      });
+    } catch (error) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'code' in error &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('このメールアドレスはすでに登録されています');
+      }
+
+      throw error;
+    }
+  }
+
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      throw new NotFoundException('ユーザーが見つかりません');
+    }
+
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: {
+          name: updateUserDto.name,
+          email: updateUserDto.email,
+          role: updateUserDto.role,
+          grade:
+            updateUserDto.grade === undefined
+              ? undefined
+              : updateUserDto.grade,
+          department:
+            updateUserDto.department === undefined
+              ? undefined
+              : updateUserDto.department,
         },
       });
     } catch (error) {

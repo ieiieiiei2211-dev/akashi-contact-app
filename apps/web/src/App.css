@@ -1782,3 +1782,9 @@ textarea:focus {
 .activate-button:hover {
   background: #bbf7d0;
 }
+
+.user-action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

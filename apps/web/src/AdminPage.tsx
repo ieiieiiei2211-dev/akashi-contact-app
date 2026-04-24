@@ -220,6 +220,63 @@ function AdminPage() {
     }
   }
 
+  async function handleEditUser(user: User) {
+    const nextName = window.prompt('\u540d\u524d\u3092\u7de8\u96c6', user.name);
+    if (nextName === null) {
+      return;
+    }
+
+    const nextEmail = window.prompt('\u30e1\u30fc\u30eb\u30a2\u30c9\u30ec\u30b9\u3092\u7de8\u96c6', user.email);
+    if (nextEmail === null) {
+      return;
+    }
+
+    const nextGrade = window.prompt('\u5b66\u5e74\u3092\u7de8\u96c6\uff081\u301c5\u3001\u7a7a\u6b04\u3067\u672a\u6307\u5b9a\uff09', user.grade ? String(user.grade) : '');
+    if (nextGrade === null) {
+      return;
+    }
+
+    const nextDepartment = window.prompt('\u6240\u5c5e\u3092\u7de8\u96c6\uff08\u7a7a\u6b04\u3067\u672a\u6307\u5b9a\uff09', user.department ?? '');
+    if (nextDepartment === null) {
+      return;
+    }
+
+    setNotice('');
+    setError('');
+
+    try {
+      const response = await fetch(`http://localhost:3000/users/${user.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: nextName,
+          email: nextEmail,
+          grade: nextGrade ? Number(nextGrade) : null,
+          department: nextDepartment || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const errorMessage =
+          typeof errorData.message === 'string'
+            ? errorData.message
+            : Array.isArray(errorData.message)
+              ? errorData.message.join(' / ')
+              : '\u30e6\u30fc\u30b6\u30fc\u306e\u7de8\u96c6\u306b\u5931\u6557\u3057\u307e\u3057\u305f';
+
+        throw new Error(errorMessage);
+      }
+
+      setNotice('\u30e6\u30fc\u30b6\u30fc\u60c5\u5831\u3092\u7de8\u96c6\u3057\u307e\u3057\u305f');
+      await fetchUsers();
+      await fetchMessages();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    }
+  }
   async function handleDeleteUser(user: User) {
     const ok = window.confirm(`${user.name} \u3092\u7121\u52b9\u5316\u3057\u307e\u3059\u304b\uff1f`);
 
@@ -903,23 +960,33 @@ function AdminPage() {
                     <td>{user.isActive ? '\u6709\u52b9' : '\u7121\u52b9'}</td>
                     <td>{new Date(user.createdAt).toLocaleString('ja-JP')}</td>
                     <td>
-                      {user.isActive ? (
+                      <div className="user-action-buttons">
                         <button
                           type="button"
-                          className="deactivate-button"
-                          onClick={() => handleDeleteUser(user)}
+                          className="edit-button"
+                          onClick={() => handleEditUser(user)}
                         >
-                          {'\u7121\u52b9\u5316'}
+                          {'\u7de8\u96c6'}
                         </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className="activate-button"
-                          onClick={() => handleActivateUser(user)}
-                        >
-                          {'\u6709\u52b9\u5316'}
-                        </button>
-                      )}
+
+                        {user.isActive ? (
+                          <button
+                            type="button"
+                            className="deactivate-button"
+                            onClick={() => handleDeleteUser(user)}
+                          >
+                            {'\u7121\u52b9\u5316'}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            className="activate-button"
+                            onClick={() => handleActivateUser(user)}
+                          >
+                            {'\u6709\u52b9\u5316'}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
