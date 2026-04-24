@@ -44,6 +44,24 @@ export class MessagesService {
     });
   }
 
+  markAsRead(messageId: number, userId: number) {
+    return this.prisma.readStatus.upsert({
+      where: {
+        messageId_userId: {
+          messageId,
+          userId,
+        },
+      },
+      update: {
+        readAt: new Date(),
+      },
+      create: {
+        messageId,
+        userId,
+      },
+    });
+  }
+
   remove(id: number) {
     return this.prisma.message.delete({
       where: { id },

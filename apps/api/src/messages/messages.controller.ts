@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
+import { ReadMessageDto } from './dto/read-message.dto';
 import { MessagesService } from './messages.service';
 
 @Controller('messages')
@@ -24,6 +25,14 @@ export class MessagesController {
   @Patch(':id/send')
   send(@Param('id', ParseIntPipe) id: number) {
     return this.messagesService.send(id);
+  }
+
+  @Post(':id/read')
+  markAsRead(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() readMessageDto: ReadMessageDto,
+  ) {
+    return this.messagesService.markAsRead(id, readMessageDto.userId);
   }
 
   @Delete(':id')
