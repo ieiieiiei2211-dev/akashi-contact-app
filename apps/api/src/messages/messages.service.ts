@@ -37,6 +37,7 @@ export class MessagesService {
       data: {
         title: createMessageDto.title,
         body: createMessageDto.body,
+        targetRole: createMessageDto.targetRole ?? null,
       },
     });
   }

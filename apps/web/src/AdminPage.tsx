@@ -26,6 +26,7 @@ type Message = {
   title: string;
   body: string;
   status: MessageStatus;
+  targetRole?: UserRole | null;
   createdAt: string;
   updatedAt: string;
   readStatuses?: ReadStatus[];
@@ -54,6 +55,7 @@ function AdminPage() {
 
   const [messageTitle, setMessageTitle] = useState('');
   const [messageBody, setMessageBody] = useState('');
+  const [targetRole, setTargetRole] = useState<UserRole | ''>('');
 
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(true);
@@ -206,6 +208,7 @@ function AdminPage() {
         body: JSON.stringify({
           title: messageTitle,
           body: messageBody,
+          targetRole: targetRole || undefined,
         }),
       });
 
@@ -222,6 +225,7 @@ function AdminPage() {
 
       setMessageTitle('');
       setMessageBody('');
+      setTargetRole('');
       setNotice('\u9023\u7d61\u3092\u4f5c\u6210\u3057\u307e\u3057\u305f');
 
       await fetchMessages();
@@ -391,6 +395,21 @@ function AdminPage() {
             />
           </label>
 
+          <label>
+            {'\u5b9b\u5148'}
+            <select
+              value={targetRole}
+              onChange={(event) => setTargetRole(event.target.value as UserRole | '')}
+            >
+              <option value="">{'\u5168\u54e1'}</option>
+              <option value="STUDENT">{roleLabels.STUDENT}</option>
+              <option value="PARENT">{roleLabels.PARENT}</option>
+              <option value="TEACHER">{roleLabels.TEACHER}</option>
+              <option value="STAFF">{roleLabels.STAFF}</option>
+              <option value="ADMIN">{roleLabels.ADMIN}</option>
+            </select>
+          </label>
+
           <button type="submit" className="primary-button">
             {'\u9023\u7d61\u3092\u4f5c\u6210'}
           </button>
@@ -424,6 +443,10 @@ function AdminPage() {
                     </span>
                     <h3>{message.title}</h3>
                     <p>{message.body}</p>
+
+                    <p className="target-role-label">
+                      {'\u5b9b\u5148'}: {message.targetRole ? roleLabels[message.targetRole] : '\u5168\u54e1'}
+                    </p>
 
                     <div className="read-summary">
                       <span>{'\u65e2\u8aad'}: {readCount}</span>
