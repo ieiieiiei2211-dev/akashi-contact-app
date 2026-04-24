@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 import { UserRole } from '@prisma/client';
 
 export class CreateMessageDto {
@@ -25,4 +25,14 @@ export class CreateMessageDto {
   @IsOptional()
   @IsString()
   targetDepartment?: string;
+
+  @IsOptional()
+  @IsString()
+  surveyQuestion?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  surveyChoices?: string[];
 }

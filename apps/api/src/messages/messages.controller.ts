@@ -10,6 +10,7 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
+import { AnswerSurveyDto } from './dto/answer-survey.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { ReadMessageDto } from './dto/read-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
@@ -44,6 +45,11 @@ export class MessagesController {
     return this.messagesService.getReadStatus(id);
   }
 
+  @Get(':id/survey-status')
+  getSurveyStatus(@Param('id', ParseIntPipe) id: number) {
+    return this.messagesService.getSurveyStatus(id);
+  }
+
   @Post()
   create(@Body() createMessageDto: CreateMessageDto) {
     return this.messagesService.create(createMessageDto);
@@ -68,6 +74,14 @@ export class MessagesController {
     @Body() readMessageDto: ReadMessageDto,
   ) {
     return this.messagesService.markAsRead(id, readMessageDto.userId);
+  }
+
+  @Post(':id/survey-answer')
+  answerSurvey(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() answerSurveyDto: AnswerSurveyDto,
+  ) {
+    return this.messagesService.answerSurvey(id, answerSurveyDto);
   }
 
   @Delete(':id')

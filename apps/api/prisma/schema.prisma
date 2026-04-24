@@ -20,16 +20,17 @@ enum MessageStatus {
 }
 
 model User {
-  id           Int          @id @default(autoincrement())
-  name         String
-  email        String       @unique
-  role         UserRole     @default(STUDENT)
-  grade        Int?
-  department   String?
-  isActive     Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @default(now()) @updatedAt
-  readStatuses ReadStatus[]
+  id            Int            @id @default(autoincrement())
+  name          String
+  email         String         @unique
+  role          UserRole       @default(STUDENT)
+  grade         Int?
+  department    String?
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @default(now()) @updatedAt
+  readStatuses  ReadStatus[]
+  surveyAnswers SurveyAnswer[]
 }
 
 model Message {
@@ -43,6 +44,7 @@ model Message {
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @default(now()) @updatedAt
   readStatuses     ReadStatus[]
+  survey           Survey?
 }
 
 model ReadStatus {
@@ -55,4 +57,40 @@ model ReadStatus {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([messageId, userId])
+}
+
+model Survey {
+  id        Int      @id @default(autoincrement())
+  messageId Int      @unique
+  question  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  message   Message        @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  choices   SurveyChoice[]
+  answers   SurveyAnswer[]
+}
+
+model SurveyChoice {
+  id       Int    @id @default(autoincrement())
+  surveyId Int
+  label    String
+  order    Int    @default(0)
+
+  survey   Survey         @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  answers  SurveyAnswer[]
+}
+
+model SurveyAnswer {
+  id         Int      @id @default(autoincrement())
+  surveyId   Int
+  choiceId   Int
+  userId     Int
+  answeredAt DateTime @default(now())
+
+  survey     Survey       @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  choice     SurveyChoice @relation(fields: [choiceId], references: [id], onDelete: Cascade)
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([surveyId, userId])
 }

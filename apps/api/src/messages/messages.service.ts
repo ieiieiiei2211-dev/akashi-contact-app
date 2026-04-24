@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { MessageStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { AnswerSurveyDto } from './dto/answer-survey.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { UpdateMessageDto } from './dto/update-message.dto';
 
@@ -12,6 +13,14 @@ export class MessagesService {
     return this.prisma.message.findMany({
       include: {
         readStatuses: true,
+        survey: {
+          include: {
+            choices: {
+              orderBy: { order: 'asc' },
+            },
+            answers: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -36,12 +45,8 @@ export class MessagesService {
         ...(user
           ? {
               AND: [
-                {
-                  OR: [{ targetRole: null }, { targetRole: user.role }],
-                },
-                {
-                  OR: [{ targetGrade: null }, { targetGrade: user.grade }],
-                },
+                { OR: [{ targetRole: null }, { targetRole: user.role }] },
+                { OR: [{ targetGrade: null }, { targetGrade: user.grade }] },
                 {
                   OR: [
                     { targetDepartment: null },
@@ -54,6 +59,14 @@ export class MessagesService {
       },
       include: {
         readStatuses: true,
+        survey: {
+          include: {
+            choices: {
+              orderBy: { order: 'asc' },
+            },
+            answers: true,
+          },
+        },
       },
       orderBy: {
         createdAt: 'desc',
@@ -62,6 +75,18 @@ export class MessagesService {
   }
 
   create(createMessageDto: CreateMessageDto) {
+    const surveyChoices = createMessageDto.surveyChoices
+      ?.map((choice) => choice.trim())
+      .filter((choice) => choice.length > 0);
+
+    const hasSurvey =
+      createMessageDto.surveyQuestion &&
+      createMessageDto.surveyQuestion.trim().length > 0;
+
+    if (hasSurvey && (!surveyChoices || surveyChoices.length < 2)) {
+      throw new BadRequestException('アンケートには2つ以上の選択肢が必要です');
+    }
+
     return this.prisma.message.create({
       data: {
         title: createMessageDto.title,
@@ -69,6 +94,30 @@ export class MessagesService {
         targetRole: createMessageDto.targetRole ?? null,
         targetGrade: createMessageDto.targetGrade ?? null,
         targetDepartment: createMessageDto.targetDepartment ?? null,
+        ...(hasSurvey
+          ? {
+              survey: {
+                create: {
+                  question: createMessageDto.surveyQuestion!.trim(),
+                  choices: {
+                    create: surveyChoices!.map((choice, index) => ({
+                      label: choice,
+                      order: index,
+                    })),
+                  },
+                },
+              },
+            }
+          : {}),
+      },
+      include: {
+        survey: {
+          include: {
+            choices: {
+              orderBy: { order: 'asc' },
+            },
+          },
+        },
       },
     });
   }
@@ -132,6 +181,109 @@ export class MessagesService {
         userId,
       },
     });
+  }
+
+  async answerSurvey(messageId: number, answerSurveyDto: AnswerSurveyDto) {
+    const survey = await this.prisma.survey.findUnique({
+      where: { messageId },
+      include: {
+        choices: true,
+      },
+    });
+
+    if (!survey) {
+      throw new NotFoundException('アンケートが見つかりません');
+    }
+
+    const choiceExists = survey.choices.some(
+      (choice) => choice.id === answerSurveyDto.choiceId,
+    );
+
+    if (!choiceExists) {
+      throw new BadRequestException('選択肢が正しくありません');
+    }
+
+    return this.prisma.surveyAnswer.upsert({
+      where: {
+        surveyId_userId: {
+          surveyId: survey.id,
+          userId: answerSurveyDto.userId,
+        },
+      },
+      update: {
+        choiceId: answerSurveyDto.choiceId,
+        answeredAt: new Date(),
+      },
+      create: {
+        surveyId: survey.id,
+        choiceId: answerSurveyDto.choiceId,
+        userId: answerSurveyDto.userId,
+      },
+      include: {
+        choice: true,
+      },
+    });
+  }
+
+  async getSurveyStatus(messageId: number) {
+    const survey = await this.prisma.survey.findUnique({
+      where: { messageId },
+      include: {
+        message: true,
+        choices: {
+          orderBy: { order: 'asc' },
+          include: {
+            answers: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+        answers: {
+          include: {
+            user: true,
+            choice: true,
+          },
+          orderBy: {
+            answeredAt: 'desc',
+          },
+        },
+      },
+    });
+
+    if (!survey) {
+      throw new NotFoundException('アンケートが見つかりません');
+    }
+
+    const summary = survey.choices.map((choice) => ({
+      choiceId: choice.id,
+      label: choice.label,
+      count: choice.answers.length,
+      users: choice.answers.map((answer) => ({
+        id: answer.user.id,
+        name: answer.user.name,
+        email: answer.user.email,
+        role: answer.user.role,
+        grade: answer.user.grade,
+        department: answer.user.department,
+        answeredAt: answer.answeredAt,
+      })),
+    }));
+
+    return {
+      message: {
+        id: survey.message.id,
+        title: survey.message.title,
+        status: survey.message.status,
+      },
+      survey: {
+        id: survey.id,
+        question: survey.question,
+      },
+      totalAnswerCount: survey.answers.length,
+      summary,
+    };
   }
 
   async getReadStatus(id: number) {
