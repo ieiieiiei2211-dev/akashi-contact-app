@@ -10,6 +10,28 @@ type ReadStatus = {
   userId: number;
   readAt: string;
 };
+type SurveyChoice = {
+  id: number;
+  surveyId: number;
+  label: string;
+  order: number;
+};
+
+type SurveyAnswer = {
+  id: number;
+  surveyId: number;
+  choiceId: number;
+  userId: number;
+  answeredAt: string;
+};
+
+type Survey = {
+  id: number;
+  messageId: number;
+  question: string;
+  choices: SurveyChoice[];
+  answers: SurveyAnswer[];
+};
 
 type Message = {
   id: number;
@@ -22,6 +44,7 @@ type Message = {
   createdAt: string;
   updatedAt: string;
   readStatuses?: ReadStatus[];
+  survey?: Survey | null;
 };
 
 type User = {
@@ -76,6 +99,7 @@ function UserPage() {
 
     const data: Message[] = await response.json();
     setMessages(data);
+    return data;
   }
 
   async function fetchInitialData(nextUserId?: number) {
@@ -171,6 +195,45 @@ function UserPage() {
     }
   }
 
+  function getMySurveyAnswer(message: Message) {
+    if (!currentUser || !message.survey) {
+      return null;
+    }
+
+    return message.survey.answers.find((answer) => answer.userId === currentUser.id) ?? null;
+  }
+
+  async function handleAnswerSurvey(message: Message, choiceId: number) {
+    if (!currentUser) {
+      setError('\u56de\u7b54\u7528\u306e\u30e6\u30fc\u30b6\u30fc\u304c\u9078\u629e\u3055\u308c\u3066\u3044\u307e\u305b\u3093');
+      return;
+    }
+
+    setError('');
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-answer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          choiceId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('\u30a2\u30f3\u30b1\u30fc\u30c8\u56de\u7b54\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+      }
+
+      const updatedMessages = await fetchSentMessages(currentUser.id);
+      const updatedMessage = updatedMessages.find((item) => item.id === message.id) ?? null;
+      setSelectedMessage(updatedMessage);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    }
+  }
   function getUserInfo(user: User) {
     const gradeText = user.grade ? `${user.grade}\u5e74` : '\u5b66\u5e74\u672a\u6307\u5b9a';
     const departmentText = user.department || '\u6240\u5c5e\u672a\u6307\u5b9a';
@@ -276,6 +339,12 @@ function UserPage() {
                     <h2>{message.title}</h2>
                     <p>{message.body}</p>
 
+                    {message.survey && (
+                      <span className="akashi-card-survey-label">
+                        {'\u30a2\u30f3\u30b1\u30fc\u30c8\u3042\u308a'}
+                      </span>
+                    )}
+
                     <div className="akashi-card-bottom">
                       <span>{'\u8a73\u7d30\u3092\u958b\u304f'}</span>
                       <strong>{'\u203a'}</strong>
@@ -309,6 +378,37 @@ function UserPage() {
             <div className="akashi-detail-body">
               {selectedMessage.body}
             </div>
+
+            {selectedMessage.survey && (
+              <section className="akashi-survey-box">
+                <h2>{'\u30a2\u30f3\u30b1\u30fc\u30c8'}</h2>
+                <p>{selectedMessage.survey.question}</p>
+
+                <div className="akashi-survey-choices">
+                  {selectedMessage.survey.choices.map((choice) => {
+                    const myAnswer = getMySurveyAnswer(selectedMessage);
+                    const selected = myAnswer?.choiceId === choice.id;
+
+                    return (
+                      <button
+                        type="button"
+                        key={choice.id}
+                        className={selected ? 'akashi-survey-choice selected' : 'akashi-survey-choice'}
+                        onClick={() => handleAnswerSurvey(selectedMessage, choice.id)}
+                      >
+                        {choice.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {getMySurveyAnswer(selectedMessage) && (
+                  <p className="akashi-survey-done">
+                    {'\u56de\u7b54\u6e08\u307f\u3067\u3059\u3002\u5225\u306e\u9078\u629e\u80a2\u3092\u62bc\u3059\u3068\u56de\u7b54\u3092\u5909\u66f4\u3067\u304d\u307e\u3059\u3002'}
+                  </p>
+                )}
+              </section>
+            )}
           </article>
 
           <section className="akashi-confirm-box">

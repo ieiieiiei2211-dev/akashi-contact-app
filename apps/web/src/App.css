@@ -1918,3 +1918,106 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+.survey-form-box {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #c7d2fe;
+  border-radius: 16px;
+  background: #eef2ff;
+}
+
+.survey-form-box label {
+  display: grid;
+  gap: 8px;
+  color: #1e3a8a;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.survey-badge {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.survey-status-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #5b21b6;
+  background: #ede9fe;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.survey-status-button:hover {
+  background: #ddd6fe;
+}
+
+.akashi-survey-box {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.akashi-survey-box h2 {
+  margin: 0 0 10px;
+  color: #1e3a8a;
+  font-size: 20px;
+}
+
+.akashi-survey-box p {
+  margin: 0 0 14px;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.akashi-survey-choices {
+  display: grid;
+  gap: 10px;
+}
+
+.akashi-survey-choice {
+  min-height: 50px;
+  padding: 12px;
+  border: 1px solid #c7d2fe;
+  border-radius: 14px;
+  color: #1e3a8a;
+  background: white;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.akashi-survey-choice.selected {
+  color: white;
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.akashi-survey-done {
+  margin-top: 14px !important;
+  color: #166534 !important;
+  font-weight: 900;
+}
+
+.akashi-card-survey-label {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #5b21b6;
+  background: #ede9fe;
+  font-size: 12px;
+  font-weight: 900;
+}

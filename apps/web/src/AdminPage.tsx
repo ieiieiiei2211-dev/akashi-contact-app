@@ -22,6 +22,28 @@ type ReadStatus = {
   userId: number;
   readAt: string;
 };
+type SurveyChoice = {
+  id: number;
+  surveyId: number;
+  label: string;
+  order: number;
+};
+
+type SurveyAnswer = {
+  id: number;
+  surveyId: number;
+  choiceId: number;
+  userId: number;
+  answeredAt: string;
+};
+
+type Survey = {
+  id: number;
+  messageId: number;
+  question: string;
+  choices: SurveyChoice[];
+  answers: SurveyAnswer[];
+};
 
 type Message = {
   id: number;
@@ -34,6 +56,7 @@ type Message = {
   createdAt: string;
   updatedAt: string;
   readStatuses?: ReadStatus[];
+  survey?: Survey | null;
 };
 
 type ReadStatusDetailUser = {
@@ -99,6 +122,8 @@ function AdminPage() {
   const [targetRole, setTargetRole] = useState<UserRole | ''>('');
   const [targetGrade, setTargetGrade] = useState('');
   const [targetDepartment, setTargetDepartment] = useState('');
+  const [surveyQuestion, setSurveyQuestion] = useState('');
+  const [surveyChoicesText, setSurveyChoicesText] = useState('');
 
   const [messageSearch, setMessageSearch] = useState('');
   const [messageStatusFilter, setMessageStatusFilter] = useState<MessageStatus | 'ALL'>('ALL');
@@ -356,6 +381,13 @@ function AdminPage() {
           targetRole: targetRole || undefined,
           targetGrade: targetGrade ? Number(targetGrade) : undefined,
           targetDepartment: targetDepartment || undefined,
+          surveyQuestion: surveyQuestion || undefined,
+          surveyChoices: surveyChoicesText
+            ? surveyChoicesText
+                .split('\n')
+                .map((choice) => choice.trim())
+                .filter((choice) => choice.length > 0)
+            : undefined,
         }),
       });
 
@@ -375,6 +407,8 @@ function AdminPage() {
       setTargetRole('');
       setTargetGrade('');
       setTargetDepartment('');
+      setSurveyQuestion('');
+      setSurveyChoicesText('');
       setNotice('\u9023\u7d61\u3092\u4f5c\u6210\u3057\u307e\u3057\u305f');
 
       await fetchMessages();
@@ -477,6 +511,33 @@ function AdminPage() {
     }
   }
 
+  async function handleShowSurveyStatus(message: Message) {
+    setNotice('');
+    setError('');
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-status`);
+
+      if (!response.ok) {
+        throw new Error('\u30a2\u30f3\u30b1\u30fc\u30c8\u96c6\u8a08\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+      }
+
+      const data = await response.json();
+
+      const summaryText = (data.summary ?? [])
+        .map((item: { label: string; count: number }) => `\u30fb${item.label}: ${item.count}\u4ef6`)
+        .join('\n');
+
+      window.alert(
+        `\u30a2\u30f3\u30b1\u30fc\u30c8: ${data.message.title}\n\n` +
+          `\u8cea\u554f: ${data.survey.question}\n` +
+          `\u56de\u7b54\u6570: ${data.totalAnswerCount}\n\n` +
+          summaryText,
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    }
+  }
   async function handleDeleteMessage(message: Message) {
     const ok = window.confirm(`${message.title} \u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f`);
 
@@ -663,6 +724,27 @@ function AdminPage() {
 
           <button type="submit" className="primary-button">
 
+          <div className="survey-form-box">
+            <label>
+              {'\u30a2\u30f3\u30b1\u30fc\u30c8\u8cea\u554f\uff08\u4efb\u610f\uff09'}
+              <input
+                value={surveyQuestion}
+                onChange={(event) => setSurveyQuestion(event.target.value)}
+                placeholder={'\u4f8b\uff1a\u6587\u5316\u796d\u306b\u53c2\u52a0\u3067\u304d\u307e\u3059\u304b\uff1f'}
+              />
+            </label>
+
+            <label>
+              {'\u9078\u629e\u80a2\uff081\u884c\u306b1\u3064\u30012\u3064\u4ee5\u4e0a\uff09'}
+              <textarea
+                value={surveyChoicesText}
+                onChange={(event) => setSurveyChoicesText(event.target.value)}
+                placeholder={'\u53c2\u52a0\n\u4e0d\u53c2\u52a0\n\u672a\u5b9a'}
+                rows={4}
+              />
+            </label>
+          </div>
+
           <div className="target-preview">
             <div className="target-preview-main">
               <span>{'\u5bfe\u8c61\u4e88\u5b9a'}</span>
@@ -768,6 +850,12 @@ function AdminPage() {
                       {'\u5b9b\u5148'}: {getTargetLabel(message)}
                     </p>
 
+                    {message.survey && (
+                      <p className="survey-badge">
+                        {'\u30a2\u30f3\u30b1\u30fc\u30c8'}: {message.survey.question}
+                      </p>
+                    )}
+
                     <div className="read-summary">
                       <span>{'\u5bfe\u8c61'}: {targetCount}</span>
                       <span>{'\u65e2\u8aad'}: {readCount}</span>
@@ -785,6 +873,16 @@ function AdminPage() {
                     >
                       {'\u65e2\u8aad\u72b6\u6cc1'}
                     </button>
+
+                    {message.survey && (
+                      <button
+                        type="button"
+                        className="survey-status-button"
+                        onClick={() => handleShowSurveyStatus(message)}
+                      >
+                        {'\u30a2\u30f3\u30b1\u30fc\u30c8\u96c6\u8a08'}
+                      </button>
+                    )}
 
                     {message.status === 'DRAFT' && (
                       <>
