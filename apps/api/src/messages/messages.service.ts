@@ -18,10 +18,28 @@ export class MessagesService {
     });
   }
 
-  findSent() {
+  async findSent(userId?: number) {
+    const user = userId
+      ? await this.prisma.user.findUnique({
+          where: { id: userId },
+        })
+      : null;
+
+    if (userId && !user) {
+      throw new NotFoundException('User not found');
+    }
+
     return this.prisma.message.findMany({
       where: {
         status: MessageStatus.SENT,
+        ...(user
+          ? {
+              OR: [
+                { targetRole: null },
+                { targetRole: user.role },
+              ],
+            }
+          : {}),
       },
       include: {
         readStatuses: true,
@@ -91,6 +109,11 @@ export class MessagesService {
     const users = await this.prisma.user.findMany({
       where: {
         isActive: true,
+        ...(message.targetRole
+          ? {
+              role: message.targetRole,
+            }
+          : {}),
       },
       orderBy: {
         id: 'asc',
@@ -101,13 +124,17 @@ export class MessagesService {
       message.readStatuses.map((readStatus) => readStatus.userId),
     );
 
-    const readUsers = message.readStatuses.map((readStatus) => ({
-      id: readStatus.user.id,
-      name: readStatus.user.name,
-      email: readStatus.user.email,
-      role: readStatus.user.role,
-      readAt: readStatus.readAt,
-    }));
+    const readUsers = message.readStatuses
+      .filter((readStatus) =>
+        users.some((user) => user.id === readStatus.userId),
+      )
+      .map((readStatus) => ({
+        id: readStatus.user.id,
+        name: readStatus.user.name,
+        email: readStatus.user.email,
+        role: readStatus.user.role,
+        readAt: readStatus.readAt,
+      }));
 
     const unreadUsers = users
       .filter((user) => !readUserIds.has(user.id))
@@ -123,6 +150,7 @@ export class MessagesService {
         id: message.id,
         title: message.title,
         status: message.status,
+        targetRole: message.targetRole,
         createdAt: message.createdAt,
       },
       readCount: readUsers.length,

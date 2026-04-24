@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import './App.css';
 
+type UserRole = 'STUDENT' | 'PARENT' | 'TEACHER' | 'STAFF' | 'ADMIN';
 type MessageStatus = 'DRAFT' | 'SENT';
 
 type ReadStatus = {
@@ -15,6 +16,7 @@ type Message = {
   title: string;
   body: string;
   status: MessageStatus;
+  targetRole?: UserRole | null;
   createdAt: string;
   updatedAt: string;
   readStatuses?: ReadStatus[];
@@ -24,6 +26,7 @@ type User = {
   id: number;
   name: string;
   email: string;
+  role: UserRole;
 };
 
 function UserPage() {
@@ -41,11 +44,17 @@ function UserPage() {
     }
 
     const users: User[] = await response.json();
-    setCurrentUser(users[0] ?? null);
+    const user = users[0] ?? null;
+    setCurrentUser(user);
+    return user;
   }
 
-  async function fetchSentMessages() {
-    const response = await fetch('http://localhost:3000/messages/sent');
+  async function fetchSentMessages(userId?: number) {
+    const url = userId
+      ? `http://localhost:3000/messages/sent?userId=${userId}`
+      : 'http://localhost:3000/messages/sent';
+
+    const response = await fetch(url);
 
     if (!response.ok) {
       throw new Error('\u9023\u7d61\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
@@ -60,8 +69,8 @@ function UserPage() {
     setError('');
 
     try {
-      await fetchCurrentUser();
-      await fetchSentMessages();
+      const user = await fetchCurrentUser();
+      await fetchSentMessages(user?.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     } finally {
@@ -113,7 +122,7 @@ function UserPage() {
         throw new Error('\u958b\u5c01\u78ba\u8a8d\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
-      await fetchSentMessages();
+      await fetchSentMessages(currentUser.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
@@ -131,7 +140,7 @@ function UserPage() {
         </button>
 
         <div className="akashi-header-title">
-          <span>{'AKASHI KOSEN'}</span>
+          <span>AKASHI KOSEN</span>
           <strong>{'\u5b66\u751f\u9023\u7d61\u30dd\u30fc\u30bf\u30eb'}</strong>
         </div>
 
@@ -146,10 +155,14 @@ function UserPage() {
             <div>
               <p className="akashi-hero-label">{'\u660e\u77f3\u5de5\u696d\u9ad8\u7b49\u5c02\u9580\u5b66\u6821'}</p>
               <h1>{'\u5b66\u6821\u304b\u3089\u306e\u9023\u7d61'}</h1>
-              <p>{'\u9001\u4fe1\u6e08\u307f\u306e\u9023\u7d61\u3060\u3051\u3092\u8868\u793a\u3057\u3066\u3044\u307e\u3059\u3002'}</p>
+              <p>{'\u3042\u306a\u305f\u306e\u5bfe\u8c61\u306b\u306a\u3063\u3066\u3044\u308b\u9001\u4fe1\u6e08\u307f\u9023\u7d61\u3060\u3051\u3092\u8868\u793a\u3057\u307e\u3059\u3002'}</p>
+
               {currentUser && (
                 <p className="akashi-user-name">
-                  {'\u8868\u793a\u4e2d\u306e\u30e6\u30fc\u30b6\u30fc\uff1a'}{currentUser.name}
+                  {'\u8868\u793a\u4e2d\u306e\u30e6\u30fc\u30b6\u30fc\uff1a'}
+                  {currentUser.name}
+                  {' / '}
+                  {currentUser.role}
                 </p>
               )}
             </div>
@@ -162,7 +175,7 @@ function UserPage() {
 
           <section className="akashi-quick-row">
             <div>
-              <span>{'\u5168\u9023\u7d61'}</span>
+              <span>{'\u8868\u793a\u4e2d'}</span>
               <strong>{messages.length}</strong>
             </div>
             <div>
@@ -208,7 +221,9 @@ function UserPage() {
               })}
 
               {messages.length === 0 && (
-                <p className="akashi-muted">{'\u73fe\u5728\u8868\u793a\u3067\u304d\u308b\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'}</p>
+                <p className="akashi-muted">
+                  {'\u73fe\u5728\u3001\u3042\u306a\u305f\u5b9b\u3066\u306b\u8868\u793a\u3067\u304d\u308b\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'}
+                </p>
               )}
             </div>
           )}

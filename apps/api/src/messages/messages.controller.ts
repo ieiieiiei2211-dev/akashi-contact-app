@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Query } from '@nestjs/common';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { ReadMessageDto } from './dto/read-message.dto';
 import { MessagesService } from './messages.service';
@@ -13,8 +13,18 @@ export class MessagesController {
   }
 
   @Get('sent')
-  findSent() {
-    return this.messagesService.findSent();
+  findSent(@Query('userId') userId?: string) {
+    if (userId === undefined) {
+      return this.messagesService.findSent();
+    }
+
+    const parsedUserId = Number(userId);
+
+    if (Number.isNaN(parsedUserId)) {
+      throw new BadRequestException('userId must be a number');
+    }
+
+    return this.messagesService.findSent(parsedUserId);
   }
 
   @Get(':id/read-status')
