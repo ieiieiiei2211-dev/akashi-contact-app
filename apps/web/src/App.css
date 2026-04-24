@@ -1878,3 +1878,43 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+.user-filter-bar {
+  display: grid;
+  grid-template-columns: 1fr 160px 150px auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 18px;
+  padding: 16px;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  background: #f8fafc;
+}
+
+.user-filter-bar label {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.user-filter-bar p {
+  margin: 0;
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: #1e3a8a;
+  background: #dbeafe;
+  font-weight: 800;
+  text-align: center;
+}
+
+.user-empty-message {
+  margin-top: 14px;
+}
+
+@media (max-width: 1000px) {
+  .user-filter-bar {
+    grid-template-columns: 1fr;
+  }
+}

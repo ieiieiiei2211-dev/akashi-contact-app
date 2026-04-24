@@ -103,6 +103,10 @@ function AdminPage() {
   const [messageSearch, setMessageSearch] = useState('');
   const [messageStatusFilter, setMessageStatusFilter] = useState<MessageStatus | 'ALL'>('ALL');
 
+  const [userSearch, setUserSearch] = useState('');
+  const [userRoleFilter, setUserRoleFilter] = useState<UserRole | 'ALL'>('ALL');
+  const [userActiveFilter, setUserActiveFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
+
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [loadingReadStatus, setLoadingReadStatus] = useState(false);
@@ -997,6 +1001,60 @@ function AdminPage() {
           </button>
         </div>
 
+        <div className="user-filter-bar">
+          <label>
+            {'\u691c\u7d22'}
+            <input
+              value={userSearch}
+              onChange={(event) => setUserSearch(event.target.value)}
+              placeholder={'\u540d\u524d\u30fb\u30e1\u30fc\u30eb\u30fb\u6240\u5c5e\u3067\u691c\u7d22'}
+            />
+          </label>
+
+          <label>
+            {'\u6a29\u9650'}
+            <select
+              value={userRoleFilter}
+              onChange={(event) => setUserRoleFilter(event.target.value as UserRole | 'ALL')}
+            >
+              <option value="ALL">{'\u3059\u3079\u3066'}</option>
+              <option value="STUDENT">{roleLabels.STUDENT}</option>
+              <option value="PARENT">{roleLabels.PARENT}</option>
+              <option value="TEACHER">{roleLabels.TEACHER}</option>
+              <option value="STAFF">{roleLabels.STAFF}</option>
+              <option value="ADMIN">{roleLabels.ADMIN}</option>
+            </select>
+          </label>
+
+          <label>
+            {'\u72b6\u614b'}
+            <select
+              value={userActiveFilter}
+              onChange={(event) => setUserActiveFilter(event.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')}
+            >
+              <option value="ALL">{'\u3059\u3079\u3066'}</option>
+              <option value="ACTIVE">{'\u6709\u52b9'}</option>
+              <option value="INACTIVE">{'\u7121\u52b9'}</option>
+            </select>
+          </label>
+
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={() => {
+              setUserSearch('');
+              setUserRoleFilter('ALL');
+              setUserActiveFilter('ALL');
+            }}
+          >
+            {'\u6761\u4ef6\u30af\u30ea\u30a2'}
+          </button>
+
+          <p>
+            {'\u8868\u793a'}: {filteredUsers.length} / {users.length}
+          </p>
+        </div>
+
         {loadingUsers && <p className="muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
 
         {!loadingUsers && (
@@ -1016,7 +1074,7 @@ function AdminPage() {
                 </tr>
               </thead>
               <tbody>
-                {users.map((user) => (
+                {filteredUsers.map((user) => (
                   <tr key={user.id}>
                     <td>{user.id}</td>
                     <td className="name-cell">{user.name}</td>
@@ -1063,6 +1121,12 @@ function AdminPage() {
                 ))}
               </tbody>
             </table>
+
+            {filteredUsers.length === 0 && (
+              <p className="muted user-empty-message">
+                {'\u6761\u4ef6\u306b\u4e00\u81f4\u3059\u308b\u30e6\u30fc\u30b6\u30fc\u306f\u3044\u307e\u305b\u3093\u3002'}
+              </p>
+            )}
           </div>
         )}
       </section>
