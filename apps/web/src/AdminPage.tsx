@@ -14,6 +14,13 @@ type User = {
   updatedAt: string;
 };
 
+type ReadStatus = {
+  id: number;
+  messageId: number;
+  userId: number;
+  readAt: string;
+};
+
 type Message = {
   id: number;
   title: string;
@@ -21,6 +28,7 @@ type Message = {
   status: MessageStatus;
   createdAt: string;
   updatedAt: string;
+  readStatuses?: ReadStatus[];
 };
 
 const roleLabels: Record<UserRole, string> = {
@@ -36,7 +44,7 @@ const messageStatusLabels: Record<MessageStatus, string> = {
   SENT: '\u9001\u4fe1\u6e08\u307f',
 };
 
-function App() {
+function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -150,6 +158,7 @@ function App() {
       setNotice('\u30e6\u30fc\u30b6\u30fc\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
 
       await fetchUsers();
+      await fetchMessages();
     } catch (err) {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
@@ -176,6 +185,7 @@ function App() {
 
       setNotice('\u30e6\u30fc\u30b6\u30fc\u3092\u524a\u9664\u3057\u307e\u3057\u305f');
       await fetchUsers();
+      await fetchMessages();
     } catch (err) {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
@@ -355,38 +365,49 @@ function App() {
 
         {!loadingMessages && (
           <div className="message-list">
-            {messages.map((message) => (
-              <article className="message-item" key={message.id}>
-                <div>
-                  <span className={`status-badge status-${message.status.toLowerCase()}`}>
-                    {messageStatusLabels[message.status]}
-                  </span>
-                  <h3>{message.title}</h3>
-                  <p>{message.body}</p>
-                </div>
-                <div className="message-actions">
-                  <time>{new Date(message.createdAt).toLocaleString('ja-JP')}</time>
+            {messages.map((message) => {
+              const readCount = message.readStatuses?.length ?? 0;
+              const unreadCount = Math.max(users.length - readCount, 0);
 
-                  {message.status === 'DRAFT' && (
+              return (
+                <article className="message-item" key={message.id}>
+                  <div>
+                    <span className={`status-badge status-${message.status.toLowerCase()}`}>
+                      {messageStatusLabels[message.status]}
+                    </span>
+                    <h3>{message.title}</h3>
+                    <p>{message.body}</p>
+
+                    <div className="read-summary">
+                      <span>{'\u65e2\u8aad'}: {readCount}</span>
+                      <span>{'\u672a\u8aad'}: {message.status === 'SENT' ? unreadCount : '-'}</span>
+                    </div>
+                  </div>
+
+                  <div className="message-actions">
+                    <time>{new Date(message.createdAt).toLocaleString('ja-JP')}</time>
+
+                    {message.status === 'DRAFT' && (
+                      <button
+                        type="button"
+                        className="send-button"
+                        onClick={() => handleSendMessage(message)}
+                      >
+                        {'\u9001\u4fe1'}
+                      </button>
+                    )}
+
                     <button
                       type="button"
-                      className="send-button"
-                      onClick={() => handleSendMessage(message)}
+                      className="delete-button"
+                      onClick={() => handleDeleteMessage(message)}
                     >
-                      {'\u9001\u4fe1'}
+                      {'\u524a\u9664'}
                     </button>
-                  )}
-
-                  <button
-                    type="button"
-                    className="delete-button"
-                    onClick={() => handleDeleteMessage(message)}
-                  >
-                    {'\u524a\u9664'}
-                  </button>
-                </div>
-              </article>
-            ))}
+                  </div>
+                </article>
+              );
+            })}
 
             {messages.length === 0 && (
               <p className="muted">{'\u307e\u3060\u9023\u7d61\u306f\u4f5c\u6210\u3055\u308c\u3066\u3044\u307e\u305b\u3093\u3002'}</p>
@@ -502,4 +523,4 @@ function App() {
   );
 }
 
-export default App;
+export default AdminPage;

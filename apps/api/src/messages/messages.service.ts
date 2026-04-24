@@ -9,6 +9,9 @@ export class MessagesService {
 
   findAll() {
     return this.prisma.message.findMany({
+      include: {
+        readStatuses: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },

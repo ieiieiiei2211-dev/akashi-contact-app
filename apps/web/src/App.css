@@ -1535,3 +1535,18 @@ textarea:focus {
   color: #dc2626;
   font-weight: 900;
 }
+
+.read-summary {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.read-summary span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #1e3a8a;
+}
