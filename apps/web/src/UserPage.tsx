@@ -17,6 +17,8 @@ type Message = {
   body: string;
   status: MessageStatus;
   targetRole?: UserRole | null;
+  targetGrade?: number | null;
+  targetDepartment?: string | null;
   createdAt: string;
   updatedAt: string;
   readStatuses?: ReadStatus[];
@@ -27,34 +29,44 @@ type User = {
   name: string;
   email: string;
   role: UserRole;
+  grade?: number | null;
+  department?: string | null;
+};
+
+const roleLabels: Record<UserRole, string> = {
+  STUDENT: '\u751f\u5f92',
+  PARENT: '\u4fdd\u8b77\u8005',
+  TEACHER: '\u6559\u54e1',
+  STAFF: '\u4e8b\u52d9',
+  ADMIN: '\u7ba1\u7406\u8005',
 };
 
 function UserPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  async function fetchCurrentUser() {
+  const currentUser = useMemo(() => {
+    return users.find((user) => user.id === currentUserId) ?? null;
+  }, [users, currentUserId]);
+
+  async function fetchUsers() {
     const response = await fetch('http://localhost:3000/users');
 
     if (!response.ok) {
       throw new Error('\u30e6\u30fc\u30b6\u30fc\u60c5\u5831\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
     }
 
-    const users: User[] = await response.json();
-    const user = users[0] ?? null;
-    setCurrentUser(user);
-    return user;
+    const data: User[] = await response.json();
+    setUsers(data);
+    return data;
   }
 
-  async function fetchSentMessages(userId?: number) {
-    const url = userId
-      ? `http://localhost:3000/messages/sent?userId=${userId}`
-      : 'http://localhost:3000/messages/sent';
-
-    const response = await fetch(url);
+  async function fetchSentMessages(userId: number) {
+    const response = await fetch(`http://localhost:3000/messages/sent?userId=${userId}`);
 
     if (!response.ok) {
       throw new Error('\u9023\u7d61\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
@@ -64,13 +76,21 @@ function UserPage() {
     setMessages(data);
   }
 
-  async function fetchInitialData() {
+  async function fetchInitialData(nextUserId?: number) {
     setLoading(true);
     setError('');
 
     try {
-      const user = await fetchCurrentUser();
-      await fetchSentMessages(user?.id);
+      const userList = await fetchUsers();
+      const selectedUserId = nextUserId ?? currentUserId ?? userList[0]?.id ?? null;
+
+      setCurrentUserId(selectedUserId);
+
+      if (selectedUserId) {
+        await fetchSentMessages(selectedUserId);
+      } else {
+        setMessages([]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     } finally {
@@ -81,6 +101,27 @@ function UserPage() {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  async function handleChangeUser(userIdText: string) {
+    const userId = Number(userIdText);
+
+    if (Number.isNaN(userId)) {
+      return;
+    }
+
+    setSelectedMessage(null);
+    setCurrentUserId(userId);
+    setLoading(true);
+    setError('');
+
+    try {
+      await fetchSentMessages(userId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function isConfirmed(message: Message) {
     if (!currentUser) {
@@ -101,7 +142,7 @@ function UserPage() {
 
   async function handleConfirm(message: Message) {
     if (!currentUser) {
-      setError('\u78ba\u8a8d\u7528\u306e\u30c6\u30b9\u30c8\u30e6\u30fc\u30b6\u30fc\u304c\u3042\u308a\u307e\u305b\u3093');
+      setError('\u78ba\u8a8d\u7528\u306e\u30e6\u30fc\u30b6\u30fc\u304c\u9078\u629e\u3055\u308c\u3066\u3044\u307e\u305b\u3093');
       return;
     }
 
@@ -126,6 +167,13 @@ function UserPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
+  }
+
+  function getUserInfo(user: User) {
+    const gradeText = user.grade ? `${user.grade}\u5e74` : '\u5b66\u5e74\u672a\u6307\u5b9a';
+    const departmentText = user.department || '\u6240\u5c5e\u672a\u6307\u5b9a';
+
+    return `${roleLabels[user.role]} / ${gradeText} / ${departmentText}`;
   }
 
   return (
@@ -155,22 +203,36 @@ function UserPage() {
             <div>
               <p className="akashi-hero-label">{'\u660e\u77f3\u5de5\u696d\u9ad8\u7b49\u5c02\u9580\u5b66\u6821'}</p>
               <h1>{'\u5b66\u6821\u304b\u3089\u306e\u9023\u7d61'}</h1>
-              <p>{'\u3042\u306a\u305f\u306e\u5bfe\u8c61\u306b\u306a\u3063\u3066\u3044\u308b\u9001\u4fe1\u6e08\u307f\u9023\u7d61\u3060\u3051\u3092\u8868\u793a\u3057\u307e\u3059\u3002'}</p>
-
-              {currentUser && (
-                <p className="akashi-user-name">
-                  {'\u8868\u793a\u4e2d\u306e\u30e6\u30fc\u30b6\u30fc\uff1a'}
-                  {currentUser.name}
-                  {' / '}
-                  {currentUser.role}
-                </p>
-              )}
+              <p>{'\u9078\u629e\u3057\u305f\u30e6\u30fc\u30b6\u30fc\u306e\u6a29\u9650\u30fb\u5b66\u5e74\u30fb\u6240\u5c5e\u306b\u5408\u3046\u9023\u7d61\u3060\u3051\u3092\u8868\u793a\u3057\u307e\u3059\u3002'}</p>
             </div>
 
             <div className="akashi-count-panel">
               <span>{'\u672a\u78ba\u8a8d'}</span>
               <strong>{unreadCount}</strong>
             </div>
+          </section>
+
+          <section className="akashi-user-selector-card">
+            <label>
+              {'\u8868\u793a\u30e6\u30fc\u30b6\u30fc'}
+              <select
+                value={currentUserId ?? ''}
+                onChange={(event) => handleChangeUser(event.target.value)}
+              >
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.name} / {roleLabels[user.role]}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            {currentUser && (
+              <p>
+                <span>{'\u73fe\u5728\u306e\u6761\u4ef6'}</span>
+                <strong>{getUserInfo(currentUser)}</strong>
+              </p>
+            )}
           </section>
 
           <section className="akashi-quick-row">
@@ -182,7 +244,7 @@ function UserPage() {
               <span>{'\u78ba\u8a8d\u6e08\u307f'}</span>
               <strong>{confirmedCount}</strong>
             </div>
-            <button type="button" onClick={fetchInitialData}>
+            <button type="button" onClick={() => fetchInitialData(currentUserId ?? undefined)}>
               {'\u66f4\u65b0'}
             </button>
           </section>
@@ -222,7 +284,7 @@ function UserPage() {
 
               {messages.length === 0 && (
                 <p className="akashi-muted">
-                  {'\u73fe\u5728\u3001\u3042\u306a\u305f\u5b9b\u3066\u306b\u8868\u793a\u3067\u304d\u308b\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'}
+                  {'\u73fe\u5728\u3001\u3053\u306e\u30e6\u30fc\u30b6\u30fc\u5b9b\u3066\u306b\u8868\u793a\u3067\u304d\u308b\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'}
                 </p>
               )}
             </div>

@@ -1692,3 +1692,48 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+.akashi-user-selector-card {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 16px;
+  border: 1px solid #dbe7f3;
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 12px 24px rgba(11, 63, 117, 0.1);
+}
+
+.akashi-user-selector-card label {
+  display: grid;
+  gap: 8px;
+  color: #0b3f75;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.akashi-user-selector-card select {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  color: #102033;
+  background: #f8fafc;
+}
+
+.akashi-user-selector-card p {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.akashi-user-selector-card p span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.akashi-user-selector-card p strong {
+  color: #0b3f75;
+  font-size: 14px;
+}
