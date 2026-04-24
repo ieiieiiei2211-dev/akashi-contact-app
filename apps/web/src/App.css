@@ -356,3 +356,28 @@ textarea:focus {
   font-size: 12px;
   font-weight: 700;
 }
+
+.send-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: white;
+  background: #2563eb;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.send-button:hover {
+  background: #1d4ed8;
+}
+
+.status-draft {
+  color: #92400e;
+  background: #fef3c7;
+}
+
+.status-sent {
+  color: #047857;
+  background: #d1fae5;
+}

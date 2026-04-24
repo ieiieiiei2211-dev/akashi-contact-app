@@ -31,6 +31,11 @@ const roleLabels: Record<UserRole, string> = {
   ADMIN: '\u7ba1\u7406\u8005',
 };
 
+const messageStatusLabels: Record<MessageStatus, string> = {
+  DRAFT: '\u4e0b\u66f8\u304d',
+  SENT: '\u9001\u4fe1\u6e08\u307f',
+};
+
 function App() {
   const [users, setUsers] = useState<User[]>([]);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -215,6 +220,32 @@ function App() {
     }
   }
 
+  async function handleSendMessage(message: Message) {
+    const ok = window.confirm(`${message.title} \u3092\u9001\u4fe1\u6e08\u307f\u306b\u3057\u307e\u3059\u304b\uff1f`);
+
+    if (!ok) {
+      return;
+    }
+
+    setNotice('');
+    setError('');
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}/send`, {
+        method: 'PATCH',
+      });
+
+      if (!response.ok) {
+        throw new Error('\u9023\u7d61\u306e\u9001\u4fe1\u51e6\u7406\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
+      }
+
+      setNotice('\u9023\u7d61\u3092\u9001\u4fe1\u6e08\u307f\u306b\u3057\u307e\u3057\u305f');
+      await fetchMessages();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
+    }
+  }
+
   async function handleDeleteMessage(message: Message) {
     const ok = window.confirm(`${message.title} \u3092\u524a\u9664\u3057\u307e\u3059\u304b\uff1f`);
 
@@ -327,12 +358,25 @@ function App() {
             {messages.map((message) => (
               <article className="message-item" key={message.id}>
                 <div>
-                  <span className="status-badge">{message.status}</span>
+                  <span className={`status-badge status-${message.status.toLowerCase()}`}>
+                    {messageStatusLabels[message.status]}
+                  </span>
                   <h3>{message.title}</h3>
                   <p>{message.body}</p>
                 </div>
                 <div className="message-actions">
                   <time>{new Date(message.createdAt).toLocaleString('ja-JP')}</time>
+
+                  {message.status === 'DRAFT' && (
+                    <button
+                      type="button"
+                      className="send-button"
+                      onClick={() => handleSendMessage(message)}
+                    >
+                      {'\u9001\u4fe1'}
+                    </button>
+                  )}
+
                   <button
                     type="button"
                     className="delete-button"
