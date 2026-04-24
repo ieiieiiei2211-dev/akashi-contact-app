@@ -278,3 +278,81 @@ th {
     flex-direction: column;
   }
 }
+.message-form {
+  display: grid;
+  gap: 16px;
+}
+
+textarea {
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: white;
+  color: #111827;
+  resize: vertical;
+}
+
+textarea:focus {
+  border-color: #2563eb;
+  outline: 3px solid rgba(37, 99, 235, 0.16);
+}
+
+.global-success,
+.global-error {
+  max-width: 1180px;
+  margin: 0 auto 16px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.global-success {
+  color: #047857;
+  background: #d1fae5;
+}
+
+.global-error {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.message-list {
+  display: grid;
+  gap: 12px;
+}
+
+.message-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.message-item h3 {
+  margin: 8px 0;
+}
+
+.message-item p {
+  margin: 0;
+  color: #475467;
+  white-space: pre-wrap;
+}
+
+.message-item time {
+  color: #667085;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.status-badge {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #92400e;
+  background: #fef3c7;
+  font-size: 12px;
+  font-weight: 700;
+}

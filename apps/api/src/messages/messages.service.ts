@@ -22,4 +22,10 @@ export class MessagesService {
       },
     });
   }
+
+  remove(id: number) {
+    return this.prisma.message.delete({
+      where: { id },
+    });
+  }
 }
