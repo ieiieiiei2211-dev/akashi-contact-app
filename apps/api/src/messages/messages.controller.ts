@@ -11,6 +11,11 @@ export class MessagesController {
     return this.messagesService.findAll();
   }
 
+  @Get('sent')
+  findSent() {
+    return this.messagesService.findSent();
+  }
+
   @Post()
   create(@Body() createMessageDto: CreateMessageDto) {
     return this.messagesService.create(createMessageDto);

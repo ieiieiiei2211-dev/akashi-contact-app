@@ -15,6 +15,17 @@ export class MessagesService {
     });
   }
 
+  findSent() {
+    return this.prisma.message.findMany({
+      where: {
+        status: MessageStatus.SENT,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
   create(createMessageDto: CreateMessageDto) {
     return this.prisma.message.create({
       data: {
