@@ -2647,3 +2647,900 @@ select:focus {
 .target-group-label {
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
 }
+
+/* ===== Akashi Kosen original portal final override ===== */
+/* 目的：
+   ・きずなネットの配色や雰囲気には寄せない
+   ・下部ナビ、連絡一覧、資料一覧、設定一覧の使用感だけ整理する
+   ・明石高専の学校ポータルらしい青系・白基調に統一する
+*/
+
+:root {
+  --akashi-navy: #063b63;
+  --akashi-blue: #0b63a8;
+  --akashi-sky: #eaf4fb;
+  --akashi-paper: #ffffff;
+  --akashi-bg: #f3f7fb;
+  --akashi-line: #d8e5ef;
+  --akashi-text: #172536;
+  --akashi-sub: #64748b;
+  --akashi-gold: #b88445;
+  --akashi-red: #d85b5b;
+  --akashi-green: #2f8f5b;
+}
+
+/* アプリ全体 */
+.akashi-user-shell {
+  width: min(560px, 100vw);
+  max-width: 560px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding-bottom: 96px;
+  background:
+    linear-gradient(180deg, #063b63 0 112px, #f3f7fb 112px 100%);
+  color: var(--akashi-text);
+  box-shadow: 0 0 28px rgba(15, 23, 42, 0.18);
+}
+
+/* 上部ヘッダー */
+.akashi-user-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  align-items: center;
+  min-height: 70px;
+  padding: 10px 14px;
+  background: rgba(6, 59, 99, 0.96);
+  color: white;
+  backdrop-filter: blur(12px);
+}
+
+.akashi-header-title span {
+  color: #b9d7ec;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+}
+
+.akashi-header-title strong {
+  color: white;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.akashi-icon-button {
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 12px;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 22px;
+}
+
+/* メイン余白 */
+.akashi-user-main,
+.akashi-detail-screen {
+  padding: 18px 16px 24px;
+}
+
+/* ホーム・各タブの見出し */
+.akashi-hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 18px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 22px;
+  background: var(--akashi-paper);
+  box-shadow: 0 10px 22px rgba(6, 59, 99, 0.08);
+}
+
+.akashi-hero-label {
+  margin: 0 0 8px;
+  color: var(--akashi-gold);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.akashi-hero h1 {
+  margin: 0 0 8px;
+  color: var(--akashi-navy);
+  font-size: 24px;
+  line-height: 1.3;
+}
+
+.akashi-hero p {
+  margin: 0;
+  color: var(--akashi-sub);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.akashi-count-panel {
+  min-width: 82px;
+  min-height: 82px;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  border-radius: 18px;
+  color: white;
+  background: linear-gradient(135deg, var(--akashi-navy), var(--akashi-blue));
+  box-shadow: none;
+}
+
+.akashi-count-panel span {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.akashi-count-panel strong {
+  font-size: 32px;
+  line-height: 1;
+}
+
+/* ホームカード */
+.akashi-home-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.akashi-home-grid button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  align-items: center;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 18px;
+  background: white;
+  text-align: left;
+  box-shadow: 0 8px 18px rgba(6, 59, 99, 0.06);
+}
+
+.akashi-home-grid span {
+  color: var(--akashi-navy);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.akashi-home-grid strong {
+  grid-row: span 2;
+  color: var(--akashi-blue);
+  font-size: 28px;
+}
+
+.akashi-home-grid small {
+  color: var(--akashi-sub);
+  font-size: 13px;
+}
+
+/* 表示ユーザー選択 */
+.akashi-user-selector-card {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 8px 18px rgba(6, 59, 99, 0.06);
+}
+
+.akashi-user-selector-card label {
+  color: var(--akashi-navy);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.akashi-user-selector-card select {
+  min-height: 44px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 12px;
+  background: #f8fbfd;
+}
+
+.akashi-logout-button {
+  color: var(--akashi-navy);
+  background: var(--akashi-sky);
+}
+
+/* 小さい集計カード */
+.akashi-quick-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 82px;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.akashi-quick-row div,
+.akashi-quick-row button {
+  min-height: 60px;
+  padding: 10px 12px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 16px;
+  background: white;
+  box-shadow: none;
+}
+
+.akashi-quick-row span {
+  color: var(--akashi-sub);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.akashi-quick-row strong {
+  color: var(--akashi-navy);
+  font-size: 23px;
+}
+
+.akashi-quick-row button {
+  color: var(--akashi-navy);
+  font-weight: 900;
+}
+
+/* 新着通知 */
+.akashi-notification-card {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border: 1px solid #f0d4b5;
+  border-radius: 18px;
+  background: #fffaf3;
+  box-shadow: none;
+}
+
+.akashi-notification-card.unread {
+  border-color: #edc99f;
+  background: #fff7ed;
+}
+
+.akashi-notification-card span {
+  color: #9a5b1f;
+}
+
+.akashi-notification-card strong,
+.akashi-notification-card p {
+  color: var(--akashi-text);
+}
+
+/* 連絡一覧：カードすぎず、連絡網アプリらしい行に寄せる */
+.akashi-message-stack {
+  display: grid;
+  gap: 10px;
+}
+
+.akashi-message-card {
+  position: relative;
+  width: 100%;
+  padding: 15px 16px 14px 18px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 18px;
+  background: white;
+  color: inherit;
+  text-align: left;
+  box-shadow: 0 8px 18px rgba(6, 59, 99, 0.06);
+}
+
+.akashi-message-card::before {
+  width: 5px;
+  background: var(--akashi-blue);
+}
+
+.akashi-message-card.confirmed::before {
+  background: #aab6c2;
+}
+
+.akashi-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.akashi-status-chip {
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: white;
+  background: var(--akashi-red);
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.akashi-status-chip.confirmed {
+  color: white;
+  background: var(--akashi-green);
+}
+
+.akashi-card-top time {
+  color: var(--akashi-sub);
+  font-size: 12px;
+}
+
+.akashi-message-card h2 {
+  margin: 11px 0 7px;
+  color: var(--akashi-text);
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.45;
+}
+
+.akashi-message-card p {
+  color: #536579;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.akashi-card-bottom {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #edf2f7;
+}
+
+.akashi-card-bottom span {
+  color: var(--akashi-blue);
+  font-size: 12px;
+}
+
+.akashi-card-bottom strong {
+  color: var(--akashi-blue);
+  font-size: 24px;
+}
+
+.akashi-card-survey-label {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #7c3aed;
+  background: #f3e8ff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* 資料一覧 */
+.akashi-resource-list {
+  display: grid;
+  gap: 10px;
+}
+
+.akashi-resource-card {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 18px;
+  background: white;
+  text-align: left;
+  box-shadow: 0 8px 18px rgba(6, 59, 99, 0.06);
+}
+
+.akashi-resource-card span {
+  color: var(--akashi-gold);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.akashi-resource-card strong {
+  color: var(--akashi-navy);
+  font-size: 18px;
+}
+
+.akashi-resource-card small {
+  color: var(--akashi-sub);
+}
+
+/* 設定画面：一般的な設定リスト風。色と文言は明石高専側に寄せる */
+.akashi-settings-card {
+  display: grid;
+  gap: 16px;
+  padding: 0;
+  border: 1px solid var(--akashi-line);
+  border-radius: 20px;
+  background: white;
+  overflow: hidden;
+  box-shadow: 0 8px 18px rgba(6, 59, 99, 0.06);
+}
+
+.akashi-settings-card dl {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+.akashi-settings-card dl div {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 12px;
+  align-items: center;
+  min-height: 58px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.akashi-settings-card dt {
+  color: var(--akashi-sub);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.akashi-settings-card dd {
+  margin: 0;
+  color: var(--akashi-text);
+  font-size: 14px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.akashi-settings-card button {
+  margin: 0 16px 16px;
+  min-height: 48px;
+  border: none;
+  border-radius: 14px;
+  color: white;
+  background: var(--akashi-navy);
+  font-weight: 900;
+}
+
+/* 詳細画面 */
+.akashi-detail-paper {
+  padding: 22px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 10px 24px rgba(6, 59, 99, 0.08);
+}
+
+.akashi-detail-school {
+  border-left-color: var(--akashi-gold);
+}
+
+.akashi-detail-school span {
+  color: var(--akashi-gold);
+}
+
+.akashi-detail-school strong {
+  color: var(--akashi-navy);
+}
+
+.akashi-detail-paper h1 {
+  color: var(--akashi-text);
+  font-size: 23px;
+}
+
+.akashi-detail-body {
+  border: 1px solid #e7eef5;
+  background: #f8fbfd;
+}
+
+.akashi-attachment-box,
+.akashi-survey-box,
+.akashi-confirm-box {
+  border: 1px solid var(--akashi-line);
+  border-radius: 18px;
+  background: white;
+  box-shadow: none;
+}
+
+.akashi-confirm-button {
+  background: var(--akashi-navy);
+}
+
+.akashi-confirm-button.done {
+  background: var(--akashi-green);
+}
+
+/* 下部ナビ：使用感は維持し、色味は独自化 */
+.akashi-bottom-dock {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  z-index: 30;
+  width: min(528px, calc(100% - 24px));
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 8px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16);
+  backdrop-filter: blur(14px);
+}
+
+.akashi-bottom-dock button {
+  min-height: 56px;
+  border: none;
+  border-radius: 16px;
+  color: #6b7c8f;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.akashi-bottom-dock span {
+  display: block;
+  margin-bottom: 3px;
+  font-size: 22px;
+}
+
+.akashi-bottom-dock button.active {
+  color: var(--akashi-navy);
+  background: var(--akashi-sky);
+  box-shadow: inset 0 0 0 1px #cfe2f2;
+}
+
+/* 三点メニュー */
+.akashi-more-menu {
+  border: 1px solid var(--akashi-line);
+  background: white;
+}
+
+.akashi-more-menu button:hover {
+  background: var(--akashi-sky);
+}
+
+/* ログイン画面 */
+.akashi-login-card {
+  border: 1px solid var(--akashi-line);
+  box-shadow: 0 16px 34px rgba(6, 59, 99, 0.12);
+}
+
+.akashi-login-header h1 {
+  color: var(--akashi-navy);
+}
+
+.akashi-login-form button,
+.akashi-dev-login-button {
+  background: var(--akashi-navy);
+}
+
+.akashi-login-demo {
+  color: var(--akashi-navy);
+  background: var(--akashi-sky);
+}
+
+@media (max-width: 520px) {
+  .akashi-user-shell {
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  .akashi-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .akashi-count-panel {
+    min-height: 72px;
+  }
+
+  .akashi-settings-card dl div {
+    grid-template-columns: 84px 1fr;
+  }
+}
+
+/* ===== Fix developer login button contrast ===== */
+
+.akashi-dev-login-button {
+  color: #063b63 !important;
+  background: #d8ebff !important;
+  border: 1px solid #a7cdf1 !important;
+  box-shadow: none !important;
+}
+
+.akashi-dev-login-button:hover:not(:disabled) {
+  background: #c5e0ff !important;
+}
+
+.akashi-dev-login-button:disabled {
+  color: #315f87 !important;
+  background: #d8ebff !important;
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* ===== UX polish: touch, readability, and app-like behavior ===== */
+
+/* スマホ操作時の余計なハイライトを抑える */
+.akashi-user-shell,
+.akashi-user-shell button,
+.akashi-user-shell a,
+.akashi-user-shell input,
+.akashi-user-shell select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.akashi-user-shell button {
+  touch-action: manipulation;
+}
+
+/* 押せる要素に自然な反応を付ける */
+.akashi-home-grid button,
+.akashi-message-card,
+.akashi-resource-card,
+.akashi-quick-row button,
+.akashi-bottom-dock button,
+.akashi-icon-button,
+.akashi-confirm-button,
+.akashi-login-form button,
+.akashi-dev-login-button,
+.akashi-settings-card button {
+  transition:
+    transform 0.12s ease,
+    background-color 0.12s ease,
+    box-shadow 0.12s ease,
+    border-color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.akashi-home-grid button:active,
+.akashi-message-card:active,
+.akashi-resource-card:active,
+.akashi-quick-row button:active,
+.akashi-bottom-dock button:active,
+.akashi-icon-button:active,
+.akashi-confirm-button:active,
+.akashi-login-form button:active,
+.akashi-dev-login-button:active,
+.akashi-settings-card button:active {
+  transform: scale(0.98);
+}
+
+/* キーボード操作・アクセシビリティ用 */
+.akashi-user-shell button:focus-visible,
+.akashi-user-shell a:focus-visible,
+.akashi-user-shell input:focus-visible,
+.akashi-user-shell select:focus-visible {
+  outline: 3px solid rgba(11, 99, 168, 0.28);
+  outline-offset: 3px;
+}
+
+/* 下部ナビ：親指で押しやすく、現在地が分かりやすい */
+.akashi-bottom-dock {
+  padding-bottom: calc(8px + env(safe-area-inset-bottom));
+}
+
+.akashi-bottom-dock button {
+  position: relative;
+}
+
+.akashi-bottom-dock button.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: #0b63a8;
+  transform: translateX(-50%);
+}
+
+.akashi-bottom-dock button:not(.active):hover {
+  background: #f4f8fb;
+}
+
+/* ヘッダーの戻る・メニューを少し押しやすく */
+.akashi-icon-button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* 連絡一覧：未確認を見つけやすく、確認済みは少し控えめに */
+.akashi-message-card:not(.confirmed) {
+  border-color: #b7d6ee;
+  background:
+    linear-gradient(90deg, rgba(234, 244, 251, 0.85), #ffffff 34%);
+}
+
+.akashi-message-card.confirmed {
+  opacity: 0.86;
+}
+
+.akashi-message-card.confirmed h2 {
+  color: #40566b;
+}
+
+.akashi-message-card:hover {
+  border-color: #a9cce8;
+  box-shadow: 0 10px 22px rgba(6, 59, 99, 0.1);
+}
+
+/* 日付と状態を読みやすく */
+.akashi-card-top time {
+  white-space: nowrap;
+}
+
+.akashi-status-chip {
+  min-width: 68px;
+  justify-content: center;
+}
+
+/* 詳細画面：本文を読みやすく */
+.akashi-detail-paper h1 {
+  letter-spacing: 0.01em;
+}
+
+.akashi-detail-body {
+  font-size: 16px;
+  line-height: 1.95;
+}
+
+/* 添付ファイル・アンケート周りの押しやすさ */
+.akashi-attachment-box a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #eaf4fb;
+}
+
+.akashi-survey-choice {
+  min-height: 46px;
+  border-radius: 14px;
+}
+
+.akashi-survey-choice.selected {
+  box-shadow: inset 0 0 0 2px #0b63a8;
+}
+
+/* 確認ボタン：重要操作として少し目立たせる */
+.akashi-confirm-box {
+  margin-bottom: 8px;
+}
+
+.akashi-confirm-button {
+  letter-spacing: 0.04em;
+}
+
+.akashi-confirm-button:not(.done):hover {
+  background: #0b63a8;
+}
+
+/* 入力欄を少し押しやすく */
+.akashi-login-form input,
+.akashi-user-selector-card select {
+  min-height: 52px;
+  font-size: 16px;
+}
+
+.akashi-login-form input::placeholder {
+  color: #7c8794;
+}
+
+/* ローディング・エラー表示 */
+.akashi-muted,
+.akashi-error {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: white;
+}
+
+.akashi-error {
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+}
+
+/* 画面幅が狭いときの窮屈さを軽減 */
+@media (max-width: 520px) {
+  .akashi-user-main,
+  .akashi-detail-screen {
+    padding-inline: 14px;
+  }
+
+  .akashi-message-card h2 {
+    font-size: 18px;
+  }
+
+  .akashi-hero h1 {
+    font-size: 22px;
+  }
+}
+
+/* ===== Message search and filter UX ===== */
+
+.akashi-message-tools {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 14px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(6, 59, 99, 0.06);
+}
+
+.akashi-message-search {
+  display: grid;
+  gap: 8px;
+  color: var(--akashi-navy);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.akashi-message-search input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 14px;
+  background: #f8fbfd;
+  color: var(--akashi-text);
+  font-size: 16px;
+}
+
+.akashi-message-search input:focus {
+  border-color: #0b63a8;
+  outline: 3px solid rgba(11, 99, 168, 0.16);
+}
+
+.akashi-filter-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.akashi-filter-row::-webkit-scrollbar {
+  display: none;
+}
+
+.akashi-filter-row button {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 8px 12px;
+  border: 1px solid var(--akashi-line);
+  border-radius: 999px;
+  color: #536579;
+  background: #f8fbfd;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.akashi-filter-row button.active {
+  color: #ffffff;
+  border-color: #063b63;
+  background: #063b63;
+}
+
+.akashi-filter-row button:active {
+  transform: scale(0.97);
+}
+
+.akashi-filter-result {
+  margin: 0;
+  color: var(--akashi-sub);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+}
+
+.akashi-message-card:not(.confirmed)::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--akashi-red);
+  box-shadow: 0 0 0 4px rgba(216, 91, 91, 0.14);
+}
+
+@media (max-width: 520px) {
+  .akashi-message-tools {
+    padding: 12px;
+  }
+
+  .akashi-filter-row button {
+    min-height: 36px;
+    padding-inline: 11px;
+  }
+}

@@ -81,6 +81,8 @@ function UserPage() {
   const [loginStudentNumber, setLoginStudentNumber] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  const [messageSearchText, setMessageSearchText] = useState('');
+  const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'confirmed' | 'attachments' | 'surveys'>('all');
 
   const currentUser = useMemo(() => {
     return users.find((user) => user.id === currentUserId) ?? null;
@@ -272,6 +274,42 @@ function UserPage() {
   const unreadCount = messages.length - confirmedCount;
   const attachmentMessages = messages.filter((message) => message.attachmentName);
   const notificationMessage = messages.find((message) => !isConfirmed(message)) ?? messages[0] ?? null;
+
+  const visibleMessages = useMemo(() => {
+    const keyword = messageSearchText.trim().toLowerCase();
+
+    return messages
+      .filter((message) => {
+        const confirmed = isConfirmed(message);
+        const searchableText = [
+          message.title,
+          message.body,
+          message.attachmentName ?? '',
+          message.survey?.question ?? '',
+        ].join(' ').toLowerCase();
+
+        const matchesKeyword = keyword.length === 0 || searchableText.includes(keyword);
+
+        const matchesFilter =
+          messageFilter === 'all' ||
+          (messageFilter === 'unread' && !confirmed) ||
+          (messageFilter === 'confirmed' && confirmed) ||
+          (messageFilter === 'attachments' && Boolean(message.attachmentName)) ||
+          (messageFilter === 'surveys' && Boolean(message.survey));
+
+        return matchesKeyword && matchesFilter;
+      })
+      .sort((a, b) => {
+        const aUnread = isConfirmed(a) ? 0 : 1;
+        const bUnread = isConfirmed(b) ? 0 : 1;
+
+        if (aUnread !== bUnread) {
+          return bUnread - aUnread;
+        }
+
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+  }, [messages, messageSearchText, messageFilter, currentUser]);
 
   async function handleConfirm(message: Message) {
     if (!currentUser) {
@@ -563,6 +601,59 @@ function UserPage() {
             </button>
           </section>
 
+          <section className="akashi-message-tools">
+            <label className="akashi-message-search">
+              <span>{"\u691c\u7d22"}</span>
+              <input
+                value={messageSearchText}
+                onChange={(event) => setMessageSearchText(event.target.value)}
+                placeholder={"\u30ad\u30fc\u30ef\u30fc\u30c9\u3067\u691c\u7d22"}
+              />
+            </label>
+
+            <div className="akashi-filter-row" role="group" aria-label="連絡の絞り込み">
+              <button
+                type="button"
+                className={messageFilter === 'all' ? 'active' : ''}
+                onClick={() => setMessageFilter('all')}
+              >
+                {"\u3059\u3079\u3066"}
+              </button>
+              <button
+                type="button"
+                className={messageFilter === 'unread' ? 'active' : ''}
+                onClick={() => setMessageFilter('unread')}
+              >
+                {"\u672a\u78ba\u8a8d"}
+              </button>
+              <button
+                type="button"
+                className={messageFilter === 'confirmed' ? 'active' : ''}
+                onClick={() => setMessageFilter('confirmed')}
+              >
+                {"\u78ba\u8a8d\u6e08\u307f"}
+              </button>
+              <button
+                type="button"
+                className={messageFilter === 'attachments' ? 'active' : ''}
+                onClick={() => setMessageFilter('attachments')}
+              >
+                {"\u8cc7\u6599\u3042\u308a"}
+              </button>
+              <button
+                type="button"
+                className={messageFilter === 'surveys' ? 'active' : ''}
+                onClick={() => setMessageFilter('surveys')}
+              >
+                {"\u30a2\u30f3\u30b1\u30fc\u30c8"}
+              </button>
+            </div>
+
+            <p className="akashi-filter-result">
+              {"\u8868\u793a\u4e2d\uff1a"}{visibleMessages.length}{"\u4ef6 / \u5168"}{messages.length}{"\u4ef6"}
+            </p>
+          </section>
+
           {notificationMessage && (
             <section className={unreadCount > 0 ? 'akashi-notification-card unread' : 'akashi-notification-card'}>
               <div>
@@ -584,7 +675,7 @@ function UserPage() {
 
           {!loading && !error && (
             <div className="akashi-message-stack">
-              {messages.map((message) => {
+              {visibleMessages.map((message) => {
                 const confirmed = isConfirmed(message);
 
                 return (
@@ -618,9 +709,11 @@ function UserPage() {
                 );
               })}
 
-              {messages.length === 0 && (
+              {visibleMessages.length === 0 && (
                 <p className="akashi-muted">
-                  {'\u73fe\u5728\u3001\u3053\u306e\u30e6\u30fc\u30b6\u30fc\u5b9b\u3066\u306b\u8868\u793a\u3067\u304d\u308b\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'}
+                  {messages.length === 0
+                    ? '\u73fe\u5728\u3001\u3053\u306e\u30e6\u30fc\u30b6\u30fc\u5b9b\u3066\u306b\u8868\u793a\u3067\u304d\u308b\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'
+                    : '\u6761\u4ef6\u306b\u5408\u3046\u9023\u7d61\u306f\u3042\u308a\u307e\u305b\u3093\u3002'}
                 </p>
               )}
             </div>
