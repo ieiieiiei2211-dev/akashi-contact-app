@@ -135,6 +135,8 @@ function AdminPage() {
   const [targetRole, setTargetRole] = useState<UserRole | ''>('');
   const [targetGrade, setTargetGrade] = useState('');
   const [targetDepartment, setTargetDepartment] = useState('');
+  const [surveyQuestion, setSurveyQuestion] = useState('');
+  const [surveyChoicesText, setSurveyChoicesText] = useState('');
 
   const [messageSearch, setMessageSearch] = useState('');
   const [messageStatusFilter, setMessageStatusFilter] = useState<MessageStatus | 'ALL'>('ALL');
@@ -419,6 +421,13 @@ function AdminPage() {
           targetRole: targetRole || undefined,
           targetGrade: targetGrade ? Number(targetGrade) : undefined,
           targetDepartment: targetDepartment || undefined,
+          surveyQuestion: surveyQuestion || undefined,
+          surveyChoices: surveyChoicesText
+            ? surveyChoicesText
+                .split("\n")
+                .map((choice) => choice.trim())
+                .filter((choice) => choice.length > 0)
+            : undefined,
         }),
       });
 
@@ -438,6 +447,8 @@ function AdminPage() {
       setTargetRole('');
       setTargetGrade('');
       setTargetDepartment('');
+      setSurveyQuestion('');
+      setSurveyChoicesText('');
       setNotice('連絡を作成しました');
 
       await fetchMessages();
@@ -841,6 +852,27 @@ function AdminPage() {
                   </option>
                 ))}
               </select>
+            </label>
+          </div>
+
+          <div className="survey-form-box">
+            <label>
+              {"\u30a2\u30f3\u30b1\u30fc\u30c8\u8cea\u554f\uff08\u4efb\u610f\uff09"}
+              <input
+                value={surveyQuestion}
+                onChange={(event) => setSurveyQuestion(event.target.value)}
+                placeholder={"\u4f8b\uff1a\u6587\u5316\u796d\u306b\u53c2\u52a0\u3067\u304d\u307e\u3059\u304b\uff1f"}
+              />
+            </label>
+
+            <label>
+              {"\u9078\u629e\u80a2\uff081\u884c\u306b1\u3064\u30012\u3064\u4ee5\u4e0a\uff09"}
+              <textarea
+                value={surveyChoicesText}
+                onChange={(event) => setSurveyChoicesText(event.target.value)}
+                placeholder={"\u53c2\u52a0\n\u4e0d\u53c2\u52a0\n\u672a\u5b9a"}
+                rows={4}
+              />
             </label>
           </div>
 
