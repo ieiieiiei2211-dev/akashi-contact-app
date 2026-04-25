@@ -21,6 +21,7 @@ export class UsersService {
         data: {
           name: createUserDto.name,
           email: createUserDto.email,
+          studentNumber: createUserDto.studentNumber ?? null,
           role: createUserDto.role,
           grade: createUserDto.grade ?? null,
           department: createUserDto.department ?? null,
@@ -55,6 +56,10 @@ export class UsersService {
         data: {
           name: updateUserDto.name,
           email: updateUserDto.email,
+          studentNumber:
+            updateUserDto.studentNumber === undefined
+              ? undefined
+              : updateUserDto.studentNumber,
           role: updateUserDto.role,
           grade:
             updateUserDto.grade === undefined
