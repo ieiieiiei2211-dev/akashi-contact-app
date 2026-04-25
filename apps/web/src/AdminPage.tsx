@@ -141,6 +141,7 @@ function AdminPage() {
   const [targetRole, setTargetRole] = useState<UserRole | ''>('');
   const [targetGrade, setTargetGrade] = useState('');
   const [targetDepartment, setTargetDepartment] = useState('');
+  const [targetGroup, setTargetGroup] = useState('custom');
   const [surveyQuestion, setSurveyQuestion] = useState('');
   const [surveyChoicesText, setSurveyChoicesText] = useState('');
 
@@ -413,6 +414,84 @@ function AdminPage() {
     }
   }
 
+  function handleTargetGroupChange(group: string) {
+    setTargetGroup(group);
+
+    if (group === 'all') {
+      setTargetRole('');
+      setTargetGrade('');
+      setTargetDepartment('');
+      return;
+    }
+
+    if (group === 'students') {
+      setTargetRole('STUDENT');
+      setTargetGrade('');
+      setTargetDepartment('');
+      return;
+    }
+
+    if (group === 'grade-1') {
+      setTargetRole('STUDENT');
+      setTargetGrade('1');
+      setTargetDepartment('');
+      return;
+    }
+
+    if (group === 'grade-2') {
+      setTargetRole('STUDENT');
+      setTargetGrade('2');
+      setTargetDepartment('');
+      return;
+    }
+
+    if (group === 'grade-3') {
+      setTargetRole('STUDENT');
+      setTargetGrade('3');
+      setTargetDepartment('');
+      return;
+    }
+
+    if (group === 'grade-4') {
+      setTargetRole('STUDENT');
+      setTargetGrade('4');
+      setTargetDepartment('');
+      return;
+    }
+
+    if (group === 'grade-5') {
+      setTargetRole('STUDENT');
+      setTargetGrade('5');
+      setTargetDepartment('');
+      return;
+    }
+
+    if (group === 'grade-1-mechanical') {
+      setTargetRole('STUDENT');
+      setTargetGrade('1');
+      setTargetDepartment('Mechanical Engineering');
+      return;
+    }
+
+    if (group === 'teachers') {
+      setTargetRole('TEACHER');
+      setTargetGrade('');
+      setTargetDepartment('');
+      return;
+    }
+
+    if (group === 'staff') {
+      setTargetRole('STAFF');
+      setTargetGrade('');
+      setTargetDepartment('');
+      return;
+    }
+
+    setTargetRole('');
+    setTargetGrade('');
+    setTargetDepartment('');
+  }
+
   async function handleCreateMessage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -461,6 +540,7 @@ function AdminPage() {
       setTargetRole('');
       setTargetGrade('');
       setTargetDepartment('');
+      setTargetGroup('custom');
       setSurveyQuestion('');
       setSurveyChoicesText('');
       setNotice('連絡を作成しました');
@@ -852,6 +932,28 @@ function AdminPage() {
             </label>
           </div>
           
+          <div className="target-group-box">
+            <label>
+              {"\u5b9b\u5148\u30b0\u30eb\u30fc\u30d7"}
+              <select value={targetGroup} onChange={(event) => handleTargetGroupChange(event.target.value)}>
+                <option value="custom">{"\u30ab\u30b9\u30bf\u30e0\u6307\u5b9a"}</option>
+                <option value="all">{"\u5168\u6821"}</option>
+                <option value="students">{"\u5b66\u751f\u5168\u54e1"}</option>
+                <option value="grade-1">{"1\u5e74\u751f"}</option>
+                <option value="grade-2">{"2\u5e74\u751f"}</option>
+                <option value="grade-3">{"3\u5e74\u751f"}</option>
+                <option value="grade-4">{"4\u5e74\u751f"}</option>
+                <option value="grade-5">{"5\u5e74\u751f"}</option>
+                <option value="grade-1-mechanical">{"1\u5e74 Mechanical Engineering"}</option>
+                <option value="teachers">{"\u6559\u54e1"}</option>
+                <option value="staff">{"\u4e8b\u52d9\u8077\u54e1"}</option>
+              </select>
+            </label>
+            <p>
+              {"\u30b0\u30eb\u30fc\u30d7\u3092\u9078\u3076\u3068\u3001\u4e0b\u306e\u5b9b\u5148\u6a29\u9650\u30fb\u5b66\u5e74\u30fb\u6240\u5c5e\u304c\u81ea\u52d5\u3067\u8a2d\u5b9a\u3055\u308c\u307e\u3059\u3002"}
+            </p>
+          </div>
+
           <div className="target-grid">
             <label>
               宛先権限
