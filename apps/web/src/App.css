@@ -2085,3 +2085,108 @@ textarea:focus {
   font-size: 13px;
   font-weight: 900;
 }
+
+
+.akashi-login-card {
+  display: grid;
+  gap: 22px;
+  width: min(480px, calc(100vw - 32px));
+  margin: 48px auto;
+  padding: 32px;
+  border-radius: 28px;
+  background: white;
+  box-shadow: 0 22px 48px rgba(15, 23, 42, 0.18);
+}
+
+.akashi-login-header {
+  display: grid;
+  gap: 8px;
+  text-align: center;
+}
+
+.akashi-login-header span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.akashi-login-header h1 {
+  margin: 0;
+  color: #0f4c8a;
+  font-size: 28px;
+}
+
+.akashi-login-header p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.7;
+}
+
+.akashi-login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.akashi-login-form label {
+  display: grid;
+  gap: 8px;
+  color: #0f3760;
+  font-weight: 900;
+}
+
+.akashi-login-form input {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  font-size: 16px;
+}
+
+.akashi-login-form button {
+  min-height: 52px;
+  border: none;
+  border-radius: 16px;
+  color: white;
+  background: #2563eb;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.akashi-login-form button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.akashi-login-demo {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  color: #1e3a8a;
+  background: #dbeafe;
+  text-align: center;
+  font-weight: 800;
+}
+
+.akashi-login-error {
+  margin: 0;
+  padding: 12px;
+  border-radius: 14px;
+  color: #b91c1c;
+  background: #fee2e2;
+  text-align: center;
+  font-weight: 900;
+}
+
+.akashi-logout-button {
+  margin-top: 12px;
+  min-height: 40px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 999px;
+  color: #1e3a8a;
+  background: #dbeafe;
+  font-weight: 900;
+  cursor: pointer;
+}
