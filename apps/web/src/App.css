@@ -2190,3 +2190,49 @@ textarea:focus {
   font-weight: 900;
   cursor: pointer;
 }
+
+
+.akashi-notification-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.akashi-notification-card.unread {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.akashi-notification-card div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.akashi-notification-card span {
+  color: #9a3412;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.akashi-notification-card strong {
+  color: #0f3760;
+  font-size: 16px;
+}
+
+.akashi-notification-card p {
+  margin: 0;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.akashi-notification-card small {
+  color: #64748b;
+  font-weight: 700;
+}

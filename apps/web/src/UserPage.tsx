@@ -223,6 +223,7 @@ function UserPage() {
   );
 
   const unreadCount = messages.length - confirmedCount;
+  const notificationMessage = messages.find((message) => !isConfirmed(message)) ?? messages[0] ?? null;
 
   async function handleConfirm(message: Message) {
     if (!currentUser) {
@@ -425,6 +426,22 @@ function UserPage() {
               {'\u66f4\u65b0'}
             </button>
           </section>
+
+          {notificationMessage && (
+            <section className={unreadCount > 0 ? 'akashi-notification-card unread' : 'akashi-notification-card'}>
+              <div>
+                <span>{'\u65b0\u7740\u901a\u77e5'}</span>
+                <strong>
+                  {unreadCount > 0
+                    ? `${unreadCount}\u4ef6\u306e\u672a\u78ba\u8a8d\u9023\u7d61\u304c\u3042\u308a\u307e\u3059`
+                    : '\u8868\u793a\u4e2d\u306e\u9023\u7d61\u306f\u3059\u3079\u3066\u78ba\u8a8d\u6e08\u307f\u3067\u3059'}
+                </strong>
+              </div>
+
+              <p>{notificationMessage.title}</p>
+              <small>{new Date(notificationMessage.createdAt).toLocaleString('ja-JP')}</small>
+            </section>
+          )}
 
           {loading && <p className="akashi-muted">{'\u8aad\u307f\u8fbc\u307f\u4e2d...'}</p>}
           {error && <p className="akashi-error">{error}</p>}
