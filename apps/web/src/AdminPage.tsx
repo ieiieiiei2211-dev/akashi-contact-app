@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import './App.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
+
 type UserRole = 'STUDENT' | 'PARENT' | 'TEACHER' | 'STAFF' | 'ADMIN';
 type MessageStatus = 'DRAFT' | 'SENT';
 
@@ -253,7 +255,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/users');
+      const response = await fetch(`${API_BASE_URL}/users`);
 
       if (!response.ok) {
         throw new Error('ユーザー一覧の取得に失敗しました');
@@ -273,7 +275,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/messages');
+      const response = await fetch(`${API_BASE_URL}/messages`);
 
       if (!response.ok) {
         throw new Error('連絡一覧の取得に失敗しました');
@@ -300,7 +302,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/users', {
+      const response = await fetch(`${API_BASE_URL}/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -368,7 +370,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3000/users/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${user.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -411,7 +413,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3000/users/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/users/${user.id}`, {
         method: 'DELETE',
       });
 
@@ -438,7 +440,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3000/users/${user.id}/activate`, {
+      const response = await fetch(`${API_BASE_URL}/users/${user.id}/activate`, {
         method: 'PATCH',
       });
 
@@ -539,7 +541,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:3000/messages', {
+      const response = await fetch(`${API_BASE_URL}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -611,7 +613,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}`, {
+      const response = await fetch(`${API_BASE_URL}/messages/${message.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -649,7 +651,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}/send`, {
+      const response = await fetch(`${API_BASE_URL}/messages/${message.id}/send`, {
         method: 'PATCH',
       });
 
@@ -670,7 +672,7 @@ function AdminPage() {
     setLoadingReadStatus(true);
 
     try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}/read-status`);
+      const response = await fetch(`${API_BASE_URL}/messages/${message.id}/read-status`);
 
       if (!response.ok) {
         throw new Error('既読状況の取得に失敗しました');
@@ -692,7 +694,7 @@ function AdminPage() {
     setLoadingSurveyStatus(true);
 
     try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-status`);
+      const response = await fetch(`${API_BASE_URL}/messages/${message.id}/survey-status`);
 
       if (!response.ok) {
         throw new Error("Failed to load survey status.");
@@ -714,7 +716,7 @@ function AdminPage() {
     setLoadingNotificationLogs(true);
 
     try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}/notification-logs`);
+      const response = await fetch(`${API_BASE_URL}/messages/${message.id}/notification-logs`);
 
       if (!response.ok) {
         throw new Error('通知ログの取得に失敗しました');
@@ -744,7 +746,7 @@ function AdminPage() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}`, {
+      const response = await fetch(`${API_BASE_URL}/messages/${message.id}`, {
         method: 'DELETE',
       });
 

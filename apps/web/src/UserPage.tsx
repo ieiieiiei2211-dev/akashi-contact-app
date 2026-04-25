@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import type { FormEvent } from 'react';
 import './App.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000';
+
 type UserRole = 'STUDENT' | 'PARENT' | 'TEACHER' | 'STAFF' | 'ADMIN';
 type MessageStatus = 'DRAFT' | 'SENT';
 
@@ -92,7 +94,7 @@ function UserPage() {
   }, [users, currentUserId]);
 
   async function fetchUsers() {
-    const response = await fetch('http://localhost:3000/users');
+    const response = await fetch(`${API_BASE_URL}/users`);
 
     if (!response.ok) {
       throw new Error('\u30e6\u30fc\u30b6\u30fc\u60c5\u5831\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
@@ -105,7 +107,7 @@ function UserPage() {
   }
 
   async function fetchSentMessages(userId: number) {
-    const response = await fetch(`http://localhost:3000/messages/sent?userId=${userId}`);
+    const response = await fetch(`${API_BASE_URL}/messages/sent?userId=${userId}`);
 
     if (!response.ok) {
       throw new Error('\u9023\u7d61\u306e\u53d6\u5f97\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
@@ -170,7 +172,7 @@ function UserPage() {
     setLoginLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/users/login', {
+      const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +215,7 @@ function UserPage() {
     setLoginLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3000/users/login', {
+      const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -345,7 +347,7 @@ function UserPage() {
     setError('');
 
     try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}/read`, {
+      const response = await fetch(`${API_BASE_URL}/messages/${message.id}/read`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -385,7 +387,7 @@ function UserPage() {
     setError("");
 
     try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-answer`, {
+      const response = await fetch(`${API_BASE_URL}/messages/${message.id}/survey-answer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -456,7 +458,7 @@ function UserPage() {
       const endpoint = subscription.endpoint;
       await subscription.unsubscribe();
 
-      const response = await fetch('http://localhost:3000/messages/push-subscriptions/disable', {
+      const response = await fetch(`${API_BASE_URL}/messages/push-subscriptions/disable`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -503,7 +505,7 @@ function UserPage() {
         return;
       }
 
-      const keyResponse = await fetch('http://localhost:3000/messages/push-public-key');
+      const keyResponse = await fetch(`${API_BASE_URL}/messages/push-public-key`);
 
       if (!keyResponse.ok) {
         throw new Error('プッシュ通知用の公開鍵を取得できませんでした。');
@@ -527,7 +529,7 @@ function UserPage() {
 
       const subscriptionJson = subscription.toJSON();
 
-      const response = await fetch('http://localhost:3000/messages/push-subscriptions', {
+      const response = await fetch(`${API_BASE_URL}/messages/push-subscriptions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

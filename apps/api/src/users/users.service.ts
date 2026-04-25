@@ -1,8 +1,21 @@
-import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+﻿import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+
+const safeUserSelect = {
+  id: true,
+  name: true,
+  email: true,
+  studentNumber: true,
+  role: true,
+  grade: true,
+  department: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+};
 
 @Injectable()
 export class UsersService {
@@ -10,6 +23,7 @@ export class UsersService {
 
   findAll() {
     return this.prisma.user.findMany({
+      select: safeUserSelect,
       orderBy: {
         id: 'asc',
       },
@@ -28,6 +42,7 @@ export class UsersService {
           grade: createUserDto.grade ?? null,
           department: createUserDto.department ?? null,
         },
+        select: safeUserSelect,
       });
     } catch (error) {
       if (
@@ -76,6 +91,7 @@ export class UsersService {
               ? undefined
               : updateUserDto.department,
         },
+        select: safeUserSelect,
       });
     } catch (error) {
       if (
@@ -123,6 +139,7 @@ export class UsersService {
       data: {
         isActive: false,
       },
+      select: safeUserSelect,
     });
   }
 
@@ -132,6 +149,7 @@ export class UsersService {
       data: {
         isActive: true,
       },
+      select: safeUserSelect,
     });
   }
 }
