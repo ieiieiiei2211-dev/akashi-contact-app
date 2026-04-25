@@ -117,7 +117,6 @@ const departmentOptions = [
   { value: 'Electrical Engineering', label: 'Electrical Engineering' },
   { value: 'Civil Engineering', label: 'Civil Engineering' },
   { value: 'Architecture', label: 'Architecture' },
-  { value: 'Applied Chemistry', label: 'Applied Chemistry' },
 ] as const;
 
 function AdminPage() {
