@@ -2371,3 +2371,128 @@ textarea:focus {
   left: 50%;
   transform: translateX(-50%);
 }
+
+
+.akashi-tab-panel {
+  padding-bottom: 96px;
+}
+
+.akashi-home-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.akashi-home-grid button,
+.akashi-resource-card {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  padding: 18px;
+  text-align: left;
+  border: 1px solid #dbeafe;
+  border-radius: 22px;
+  background: #eff6ff;
+  cursor: pointer;
+}
+
+.akashi-home-grid span,
+.akashi-resource-card span {
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.akashi-home-grid strong,
+.akashi-resource-card strong {
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.akashi-home-grid small,
+.akashi-resource-card small {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.akashi-resource-list {
+  display: grid;
+  gap: 14px;
+}
+
+.akashi-settings-card {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.1);
+}
+
+.akashi-settings-card dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.akashi-settings-card dl div {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.akashi-settings-card dt {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.akashi-settings-card dd {
+  margin: 0;
+  color: #0f172a;
+  font-weight: 900;
+}
+
+.akashi-settings-card button {
+  min-height: 46px;
+  border: none;
+  border-radius: 16px;
+  color: white;
+  background: #2563eb;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.akashi-more-wrapper {
+  position: relative;
+}
+
+.akashi-more-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 20;
+  display: grid;
+  min-width: 180px;
+  padding: 8px;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+}
+
+.akashi-more-menu button {
+  padding: 10px 12px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: #0f172a;
+  text-align: left;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.akashi-more-menu button:hover {
+  background: #eff6ff;
+}

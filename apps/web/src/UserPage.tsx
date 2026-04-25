@@ -61,19 +61,6 @@ type User = {
   isActive: boolean;
 };
 
-function getDepartmentShortLabel(department?: string | null) {
-  if (!department) return null;
-
-  const labels: Record<string, string> = {
-    'Mechanical Engineering': 'M',
-    'Electrical Engineering': 'E',
-    'Civil Engineering': 'C',
-    Architecture: 'A',
-  };
-
-  return labels[department] ?? department;
-}
-
 const roleLabels: Record<UserRole, string> = {
   STUDENT: '\u751f\u5f92',
   PARENT: '\u4fdd\u8b77\u8005',
@@ -89,6 +76,8 @@ function UserPage() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'home' | 'messages' | 'resources' | 'settings'>('messages');
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [loginStudentNumber, setLoginStudentNumber] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
@@ -281,6 +270,7 @@ function UserPage() {
   );
 
   const unreadCount = messages.length - confirmedCount;
+  const attachmentMessages = messages.filter((message) => message.attachmentName);
   const notificationMessage = messages.find((message) => !isConfirmed(message)) ?? messages[0] ?? null;
 
   async function handleConfirm(message: Message) {
@@ -431,12 +421,91 @@ function UserPage() {
           <strong>{'\u5b66\u751f\u9023\u7d61\u30dd\u30fc\u30bf\u30eb'}</strong>
         </div>
 
-        <button type="button" className="akashi-icon-button">
-          {'\u22ef'}
-        </button>
+        <div className="akashi-more-wrapper">
+          <button
+            type="button"
+            className="akashi-icon-button"
+            onClick={() => setIsMoreMenuOpen((value) => !value)}
+          >
+            {'\u22ef'}
+          </button>
+
+          {isMoreMenuOpen && (
+            <div className="akashi-more-menu">
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('home');
+                  setSelectedMessage(null);
+                  setIsMoreMenuOpen(false);
+                }}
+              >
+                {"\u30db\u30fc\u30e0\u3078\u79fb\u52d5"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  fetchInitialData(currentUserId ?? undefined);
+                  setIsMoreMenuOpen(false);
+                }}
+              >
+                {"\u6700\u65b0\u306b\u66f4\u65b0"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('settings');
+                  setSelectedMessage(null);
+                  setIsMoreMenuOpen(false);
+                }}
+              >
+                {"\u8a2d\u5b9a\u3092\u958b\u304f"}
+              </button>
+            </div>
+          )}
+        </div>
       </header>
 
-      {!selectedMessage && (
+      {!selectedMessage && activeTab === 'home' && (
+        <section className="akashi-user-main akashi-tab-panel">
+          <section className="akashi-hero">
+            <div>
+              <p className="akashi-hero-label">{"\u30db\u30fc\u30e0"}</p>
+              <h1>{"\u5229\u7528\u72b6\u6cc1"}</h1>
+              <p>{"\u73fe\u5728\u306e\u9023\u7d61\u30fb\u672a\u78ba\u8a8d\u30fb\u8cc7\u6599\u306e\u72b6\u6cc1\u3092\u8868\u793a\u3057\u307e\u3059\u3002"}</p>
+            </div>
+
+            <div className="akashi-count-panel">
+              <span>{"\u672a\u78ba\u8a8d"}</span>
+              <strong>{unreadCount}</strong>
+            </div>
+          </section>
+
+          <section className="akashi-home-grid">
+            <button type="button" onClick={() => setActiveTab('messages')}>
+              <span>{"\u9023\u7d61"}</span>
+              <strong>{messages.length}</strong>
+              <small>{"\u8868\u793a\u4e2d\u306e\u9023\u7d61"}</small>
+            </button>
+
+            <button type="button" onClick={() => setActiveTab('messages')}>
+              <span>{"\u672a\u78ba\u8a8d"}</span>
+              <strong>{unreadCount}</strong>
+              <small>{"\u78ba\u8a8d\u304c\u5fc5\u8981\u306a\u9023\u7d61"}</small>
+            </button>
+
+            <button type="button" onClick={() => setActiveTab('resources')}>
+              <span>{"\u8cc7\u6599"}</span>
+              <strong>{attachmentMessages.length}</strong>
+              <small>{"\u6dfb\u4ed8\u30d5\u30a1\u30a4\u30eb\u4ed8\u304d"}</small>
+            </button>
+          </section>
+        </section>
+      )}
+
+      {!selectedMessage && activeTab === 'messages' && (
         <section className="akashi-user-main">
           <section className="akashi-hero">
             <div>
@@ -559,6 +628,76 @@ function UserPage() {
         </section>
       )}
 
+      {!selectedMessage && activeTab === 'resources' && (
+        <section className="akashi-user-main akashi-tab-panel">
+          <section className="akashi-hero">
+            <div>
+              <p className="akashi-hero-label">{"\u8cc7\u6599"}</p>
+              <h1>{"\u6dfb\u4ed8\u30d5\u30a1\u30a4\u30eb"}</h1>
+              <p>{"\u6dfb\u4ed8\u30d5\u30a1\u30a4\u30eb\u4ed8\u304d\u306e\u9023\u7d61\u3060\u3051\u3092\u8868\u793a\u3057\u307e\u3059\u3002"}</p>
+            </div>
+          </section>
+
+          <div className="akashi-resource-list">
+            {attachmentMessages.map((message) => (
+              <button
+                type="button"
+                key={message.id}
+                className="akashi-resource-card"
+                onClick={() => setSelectedMessage(message)}
+              >
+                <span>{"\u8cc7\u6599"}</span>
+                <strong>{message.attachmentName}</strong>
+                <small>{message.title}</small>
+              </button>
+            ))}
+
+            {attachmentMessages.length === 0 && (
+              <p className="akashi-muted">{"\u8868\u793a\u3067\u304d\u308b\u8cc7\u6599\u306f\u3042\u308a\u307e\u305b\u3093\u3002"}</p>
+            )}
+          </div>
+        </section>
+      )}
+
+      {!selectedMessage && activeTab === 'settings' && (
+        <section className="akashi-user-main akashi-tab-panel">
+          <section className="akashi-hero">
+            <div>
+              <p className="akashi-hero-label">{"\u8a2d\u5b9a"}</p>
+              <h1>{"\u30a2\u30ab\u30a6\u30f3\u30c8"}</h1>
+              <p>{"\u30ed\u30b0\u30a4\u30f3\u4e2d\u306e\u5229\u7528\u8005\u60c5\u5831\u3092\u8868\u793a\u3057\u307e\u3059\u3002"}</p>
+            </div>
+          </section>
+
+          {currentUser && (
+            <section className="akashi-settings-card">
+              <dl>
+                <div>
+                  <dt>{"\u540d\u524d"}</dt>
+                  <dd>{currentUser.name}</dd>
+                </div>
+                <div>
+                  <dt>{"\u5b66\u7c4d\u756a\u53f7"}</dt>
+                  <dd>{currentUser.studentNumber || '-'}</dd>
+                </div>
+                <div>
+                  <dt>{"\u6a29\u9650"}</dt>
+                  <dd>{roleLabels[currentUser.role]}</dd>
+                </div>
+                <div>
+                  <dt>{"\u6761\u4ef6"}</dt>
+                  <dd>{getUserInfo(currentUser)}</dd>
+                </div>
+              </dl>
+
+              <button type="button" onClick={handleDemoLogout}>
+                {"\u30ed\u30b0\u30a2\u30a6\u30c8"}
+              </button>
+            </section>
+          )}
+        </section>
+      )}
+
       {selectedMessage && (
         <section className="akashi-detail-screen">
           <article className="akashi-detail-paper">
@@ -641,21 +780,52 @@ function UserPage() {
       )}
 
       <nav className="akashi-bottom-dock">
-        <button type="button">
+        <button
+          type="button"
+          className={activeTab === 'home' && !selectedMessage ? 'active' : ''}
+          onClick={() => {
+            setActiveTab('home');
+            setSelectedMessage(null);
+          }}
+        >
           <span>{'\u2302'}</span>
-          {'\u30db\u30fc\u30e0'}
+          {"\u30db\u30fc\u30e0"}
         </button>
-        <button type="button" className="active">
+
+        <button
+          type="button"
+          className={activeTab === 'messages' && !selectedMessage ? 'active' : ''}
+          onClick={() => {
+            setActiveTab('messages');
+            setSelectedMessage(null);
+          }}
+        >
           <span>{'\u2709'}</span>
-          {'\u9023\u7d61'}
+          {"\u9023\u7d61"}
         </button>
-        <button type="button">
+
+        <button
+          type="button"
+          className={activeTab === 'resources' && !selectedMessage ? 'active' : ''}
+          onClick={() => {
+            setActiveTab('resources');
+            setSelectedMessage(null);
+          }}
+        >
           <span>{'\u25a4'}</span>
-          {'\u8cc7\u6599'}
+          {"\u8cc7\u6599"}
         </button>
-        <button type="button">
+
+        <button
+          type="button"
+          className={activeTab === 'settings' && !selectedMessage ? 'active' : ''}
+          onClick={() => {
+            setActiveTab('settings');
+            setSelectedMessage(null);
+          }}
+        >
           <span>{'\u2699'}</span>
-          {'\u8a2d\u5b9a'}
+          {"\u8a2d\u5b9a"}
         </button>
       </nav>
     </main>
