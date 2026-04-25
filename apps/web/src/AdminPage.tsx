@@ -1,4 +1,5 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 import './App.css';
 
 type UserRole = 'STUDENT' | 'PARENT' | 'TEACHER' | 'STAFF' | 'ADMIN';
@@ -34,6 +35,7 @@ type Message = {
   createdAt: string;
   updatedAt: string;
   readStatuses?: ReadStatus[];
+  survey?: { question: string } | null;
 };
 
 type ReadStatusDetailUser = {
@@ -754,6 +756,11 @@ function AdminPage() {
                     <p className="target-role-label">
                       宛先: {getTargetLabel(message)}
                     </p>
+                    {message.survey && (
+  <p className="survey-badge">
+    アンケートあり: {message.survey.question}
+  </p>
+)}
 
                     <div className="read-summary">
                       <span>対象: {targetCount}</span>

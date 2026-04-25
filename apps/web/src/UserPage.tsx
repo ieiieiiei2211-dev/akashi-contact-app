@@ -197,6 +197,47 @@ function UserPage() {
     }
   }
 
+
+  function getMySurveyAnswer(message: Message) {
+    if (!currentUser || !message.survey) {
+      return null;
+    }
+
+    return message.survey.answers.find((answer) => answer.userId === currentUser.id) ?? null;
+  }
+
+  async function handleAnswerSurvey(message: Message, choiceId: number) {
+    if (!currentUser) {
+      setError("No user selected for survey answer.");
+      return;
+    }
+
+    setError("");
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-answer`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          choiceId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save survey answer.");
+      }
+
+      const updatedMessages = await fetchSentMessages(currentUser.id);
+      const updatedMessage = updatedMessages.find((item) => item.id === message.id) ?? null;
+      setSelectedMessage(updatedMessage);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error occurred.");
+    }
+  }
+
   function getUserInfo(user: User) {
     const gradeText = user.grade ? `${user.grade}\u5e74` : '\u5b66\u5e74\u672a\u6307\u5b9a';
     const departmentText = user.department || '\u6240\u5c5e\u672a\u6307\u5b9a';
