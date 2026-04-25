@@ -29,6 +29,8 @@ type Message = {
   id: number;
   title: string;
   body: string;
+  attachmentName?: string | null;
+  attachmentUrl?: string | null;
   status: MessageStatus;
   targetRole?: UserRole | null;
   targetGrade?: number | null;
@@ -134,6 +136,8 @@ function AdminPage() {
 
   const [messageTitle, setMessageTitle] = useState('');
   const [messageBody, setMessageBody] = useState('');
+  const [attachmentName, setAttachmentName] = useState('');
+  const [attachmentUrl, setAttachmentUrl] = useState('');
   const [targetRole, setTargetRole] = useState<UserRole | ''>('');
   const [targetGrade, setTargetGrade] = useState('');
   const [targetDepartment, setTargetDepartment] = useState('');
@@ -424,6 +428,8 @@ function AdminPage() {
         body: JSON.stringify({
           title: messageTitle,
           body: messageBody,
+          attachmentName: attachmentName || undefined,
+          attachmentUrl: attachmentUrl || undefined,
           targetRole: targetRole || undefined,
           targetGrade: targetGrade ? Number(targetGrade) : undefined,
           targetDepartment: targetDepartment || undefined,
@@ -450,6 +456,8 @@ function AdminPage() {
 
       setMessageTitle('');
       setMessageBody('');
+      setAttachmentName('');
+      setAttachmentUrl('');
       setTargetRole('');
       setTargetGrade('');
       setTargetDepartment('');
@@ -823,6 +831,26 @@ function AdminPage() {
               required
             />
           </label>
+
+          <div className="attachment-form-box">
+            <label>
+              {"\u6dfb\u4ed8\u30d5\u30a1\u30a4\u30eb\u540d\uff08\u4efb\u610f\uff09"}
+              <input
+                value={attachmentName}
+                onChange={(event) => setAttachmentName(event.target.value)}
+                placeholder={"\u4f8b\uff1a\u6587\u5316\u796d\u6848\u5185.pdf"}
+              />
+            </label>
+
+            <label>
+              {"\u6dfb\u4ed8\u30d5\u30a1\u30a4\u30ebURL\uff08\u4efb\u610f\uff09"}
+              <input
+                value={attachmentUrl}
+                onChange={(event) => setAttachmentUrl(event.target.value)}
+                placeholder={"\u4f8b\uff1ahttps://example.com/bunkasai.pdf"}
+              />
+            </label>
+          </div>
           
           <div className="target-grid">
             <label>

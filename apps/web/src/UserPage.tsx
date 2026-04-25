@@ -38,6 +38,8 @@ type Message = {
   id: number;
   title: string;
   body: string;
+  attachmentName?: string | null;
+  attachmentUrl?: string | null;
   status: MessageStatus;
   targetRole?: UserRole | null;
   targetGrade?: number | null;
@@ -507,6 +509,19 @@ function UserPage() {
             <div className="akashi-detail-body">
               {selectedMessage.body}
             </div>
+
+            {selectedMessage.attachmentName && (
+              <section className="akashi-attachment-box">
+                <h2>{"\u6dfb\u4ed8\u30d5\u30a1\u30a4\u30eb"}</h2>
+                {selectedMessage.attachmentUrl ? (
+                  <a href={selectedMessage.attachmentUrl} target="_blank" rel="noreferrer">
+                    {selectedMessage.attachmentName}
+                  </a>
+                ) : (
+                  <p>{selectedMessage.attachmentName}</p>
+                )}
+              </section>
+            )}
 
             {selectedMessage.survey && (
               <section className="akashi-survey-box">

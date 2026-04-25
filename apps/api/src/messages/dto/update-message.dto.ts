@@ -1,6 +1,5 @@
-import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { UserRole } from '@prisma/client';
+import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class UpdateMessageDto {
   @IsOptional()
@@ -12,17 +11,31 @@ export class UpdateMessageDto {
   body?: string;
 
   @IsOptional()
-  @IsEnum(UserRole)
-  targetRole?: UserRole | null;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  @Max(5)
-  targetGrade?: number | null;
+  @IsString()
+  attachmentName?: string;
 
   @IsOptional()
   @IsString()
-  targetDepartment?: string | null;
+  attachmentUrl?: string;
+
+  @IsOptional()
+  @IsEnum(UserRole)
+  targetRole?: UserRole;
+
+  @IsOptional()
+  @IsInt()
+  targetGrade?: number;
+
+  @IsOptional()
+  @IsString()
+  targetDepartment?: string;
+
+  @IsOptional()
+  @IsString()
+  surveyQuestion?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  surveyChoices?: string[];
 }

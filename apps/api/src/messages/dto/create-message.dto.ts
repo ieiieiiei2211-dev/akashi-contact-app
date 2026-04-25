@@ -1,25 +1,27 @@
-import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
 import { UserRole } from '@prisma/client';
+import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class CreateMessageDto {
   @IsString()
-  @IsNotEmpty()
   title: string;
 
   @IsString()
-  @IsNotEmpty()
   body: string;
+
+  @IsOptional()
+  @IsString()
+  attachmentName?: string;
+
+  @IsOptional()
+  @IsString()
+  attachmentUrl?: string;
 
   @IsOptional()
   @IsEnum(UserRole)
   targetRole?: UserRole;
 
   @IsOptional()
-  @Type(() => Number)
   @IsInt()
-  @Min(1)
-  @Max(5)
   targetGrade?: number;
 
   @IsOptional()
@@ -32,7 +34,6 @@ export class CreateMessageDto {
 
   @IsOptional()
   @IsArray()
-  @ArrayMaxSize(10)
   @IsString({ each: true })
   surveyChoices?: string[];
 }

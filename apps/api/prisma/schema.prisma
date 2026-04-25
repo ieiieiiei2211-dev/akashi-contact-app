@@ -39,6 +39,8 @@ model Message {
   id               Int           @id @default(autoincrement())
   title            String
   body             String
+  attachmentName   String?
+  attachmentUrl    String?
   status           MessageStatus @default(DRAFT)
   targetRole       UserRole?
   targetGrade      Int?

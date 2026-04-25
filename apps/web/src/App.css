@@ -2236,3 +2236,46 @@ textarea:focus {
   color: #64748b;
   font-weight: 700;
 }
+
+
+.attachment-form-box {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #bae6fd;
+  border-radius: 16px;
+  background: #f0f9ff;
+}
+
+.attachment-form-box label {
+  display: grid;
+  gap: 8px;
+  color: #075985;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+
+.akashi-attachment-box {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.akashi-attachment-box h2 {
+  margin: 0;
+  color: #1e3a8a;
+  font-size: 16px;
+}
+
+.akashi-attachment-box a,
+.akashi-attachment-box p {
+  margin: 0;
+  color: #1d4ed8;
+  font-weight: 900;
+  text-decoration: none;
+}

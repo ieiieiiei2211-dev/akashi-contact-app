@@ -91,6 +91,8 @@ export class MessagesService {
       data: {
         title: createMessageDto.title,
         body: createMessageDto.body,
+        attachmentName: createMessageDto.attachmentName ?? null,
+        attachmentUrl: createMessageDto.attachmentUrl ?? null,
         targetRole: createMessageDto.targetRole ?? null,
         targetGrade: createMessageDto.targetGrade ?? null,
         targetDepartment: createMessageDto.targetDepartment ?? null,
