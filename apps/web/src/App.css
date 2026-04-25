@@ -2350,3 +2350,24 @@ textarea:focus {
   font-size: 13px;
   font-weight: 900;
 }
+
+
+/* wider user portal */
+.akashi-user-shell {
+  width: min(560px, 100vw);
+  max-width: 560px;
+}
+
+.akashi-user-shell .akashi-user-card,
+.akashi-user-shell .akashi-user-section,
+.akashi-user-shell .akashi-message-card,
+.akashi-user-shell .akashi-detail-card,
+.akashi-user-shell .akashi-login-card {
+  max-width: none;
+}
+
+.akashi-bottom-nav {
+  width: min(500px, calc(100% - 32px));
+  left: 50%;
+  transform: translateX(-50%);
+}

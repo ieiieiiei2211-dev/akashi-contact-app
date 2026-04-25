@@ -101,6 +101,19 @@ type SurveyStatusDetail = {
   unansweredUsers: SurveyStatusUser[];
 };
 
+function getDepartmentShortLabel(department?: string | null) {
+  if (!department) return null;
+
+  const labels: Record<string, string> = {
+    'Mechanical Engineering': 'M',
+    'Electrical Engineering': 'E',
+    'Civil Engineering': 'C',
+    Architecture: 'A',
+  };
+
+  return labels[department] ?? department;
+}
+
 const roleLabels: Record<UserRole, string> = {
   STUDENT: '生徒',
   PARENT: '保護者',
@@ -116,10 +129,10 @@ const messageStatusLabels: Record<MessageStatus, string> = {
 
 const departmentOptions = [
   { value: '', label: '未指定 / 全所属' },
-  { value: 'Mechanical Engineering', label: 'Mechanical Engineering' },
-  { value: 'Electrical Engineering', label: 'Electrical Engineering' },
-  { value: 'Civil Engineering', label: 'Civil Engineering' },
-  { value: 'Architecture', label: 'Architecture' },
+  { value: 'Mechanical Engineering', label: 'M' },
+  { value: 'Electrical Engineering', label: 'E' },
+  { value: 'Civil Engineering', label: 'C' },
+  { value: 'Architecture', label: 'A' },
 ] as const;
 
 function AdminPage() {
@@ -732,7 +745,7 @@ function AdminPage() {
   function getTargetLabel(message: Message | ReadStatusDetail['message']) {
     const roleText = message.targetRole ? roleLabels[message.targetRole] : '全員';
     const gradeText = message.targetGrade ? `${message.targetGrade}年` : '全学年';
-    const departmentText = message.targetDepartment || '全所属';
+    const departmentText = getDepartmentShortLabel(message.targetDepartment) || '全所属';
 
     return `${roleText} / ${gradeText} / ${departmentText}`;
   }
@@ -944,7 +957,7 @@ function AdminPage() {
                 <option value="grade-3">{"3\u5e74\u751f"}</option>
                 <option value="grade-4">{"4\u5e74\u751f"}</option>
                 <option value="grade-5">{"5\u5e74\u751f"}</option>
-                <option value="grade-1-mechanical">{"1\u5e74 Mechanical Engineering"}</option>
+                <option value="grade-1-mechanical">{"1\u5e74 M"}</option>
                 <option value="teachers">{"\u6559\u54e1"}</option>
                 <option value="staff">{"\u4e8b\u52d9\u8077\u54e1"}</option>
               </select>
@@ -1446,7 +1459,7 @@ function AdminPage() {
                       </span>
                     </td>
                     <td>{user.grade ?? '-'}</td>
-                    <td>{user.department || '-'}</td>
+                    <td>{getDepartmentShortLabel(user.department) || '-'}</td>
                     <td>{user.isActive ? '有効' : '無効'}</td>
                     <td>{new Date(user.createdAt).toLocaleString('ja-JP')}</td>
                     <td>

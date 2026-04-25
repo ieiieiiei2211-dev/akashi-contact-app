@@ -61,6 +61,19 @@ type User = {
   isActive: boolean;
 };
 
+function getDepartmentShortLabel(department?: string | null) {
+  if (!department) return null;
+
+  const labels: Record<string, string> = {
+    'Mechanical Engineering': 'M',
+    'Electrical Engineering': 'E',
+    'Civil Engineering': 'C',
+    Architecture: 'A',
+  };
+
+  return labels[department] ?? department;
+}
+
 const roleLabels: Record<UserRole, string> = {
   STUDENT: '\u751f\u5f92',
   PARENT: '\u4fdd\u8b77\u8005',
