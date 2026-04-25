@@ -50,6 +50,11 @@ export class MessagesController {
     return this.messagesService.getSurveyStatus(id);
   }
 
+  @Get(':id/notification-logs')
+  getNotificationLogs(@Param('id', ParseIntPipe) id: number) {
+    return this.messagesService.getNotificationLogs(id);
+  }
+
   @Post()
   create(@Body() createMessageDto: CreateMessageDto) {
     return this.messagesService.create(createMessageDto);

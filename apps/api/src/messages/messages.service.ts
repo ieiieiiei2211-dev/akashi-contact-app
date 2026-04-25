@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { MessageStatus } from '@prisma/client';
+import { MessageStatus, NotificationStatus, NotificationType } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AnswerSurveyDto } from './dto/answer-survey.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -159,15 +159,99 @@ export class MessagesService {
     });
   }
 
-  send(id: number) {
-    return this.prisma.message.update({
+  async send(id: number) {
+    const message = await this.prisma.message.findUnique({
+      where: { id },
+    });
+
+    if (!message) {
+      throw new NotFoundException('Message not found');
+    }
+
+    if (message.status === MessageStatus.SENT) {
+      return message;
+    }
+
+    const targetUsers = await this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        ...(message.targetRole ? { role: message.targetRole } : {}),
+        ...(message.targetGrade ? { grade: message.targetGrade } : {}),
+        ...(message.targetDepartment
+          ? { department: message.targetDepartment }
+          : {}),
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
+
+    const sentMessage = await this.prisma.message.update({
       where: { id },
       data: {
         status: MessageStatus.SENT,
       },
     });
+
+    if (targetUsers.length > 0) {
+      await this.prisma.notificationLog.createMany({
+        data: targetUsers.map((user) => {
+          const hasEmail = user.email.trim().length > 0;
+
+          if (hasEmail) {
+            console.log(
+              [
+                '[mail:mock]',
+                `to=${user.email}`,
+                `name=${user.name}`,
+                `messageId=${message.id}`,
+                `title=${message.title}`,
+              ].join(' '),
+            );
+          }
+
+          return {
+            messageId: message.id,
+            userId: user.id,
+            type: NotificationType.EMAIL,
+            status: hasEmail
+              ? NotificationStatus.SENT
+              : NotificationStatus.SKIPPED,
+            errorMessage: hasEmail
+              ? null
+              : 'メールアドレスが登録されていません',
+          };
+        }),
+      });
+    }
+
+    return sentMessage;
   }
 
+ getNotificationLogs(messageId: number) {
+  return this.prisma.notificationLog.findMany({
+    where: {
+      messageId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          studentNumber: true,
+          role: true,
+          grade: true,
+          department: true,
+          isActive: true,
+        },
+      },
+    },
+    orderBy: {
+      sentAt: 'desc',
+    },
+  });
+}
   markAsRead(messageId: number, userId: number) {
     return this.prisma.readStatus.upsert({
       where: {
