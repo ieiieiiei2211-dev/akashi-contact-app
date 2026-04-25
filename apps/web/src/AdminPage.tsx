@@ -91,8 +91,11 @@ type SurveyStatusDetail = {
     id: number;
     question: string;
   };
+  targetCount: number;
   totalAnswerCount: number;
+  unansweredCount: number;
   summary: SurveyStatusSummaryItem[];
+  unansweredUsers: SurveyStatusUser[];
 };
 
 const roleLabels: Record<UserRole, string> = {
@@ -703,8 +706,16 @@ function AdminPage() {
                   <strong>{surveyStatusDetail.survey.question}</strong>
                 </div>
                 <div>
+                  <span>{"\u5bfe\u8c61\u8005"}</span>
+                  <strong>{surveyStatusDetail.targetCount}</strong>
+                </div>
+                <div>
                   <span>{"\u56de\u7b54\u6570"}</span>
                   <strong>{surveyStatusDetail.totalAnswerCount}</strong>
+                </div>
+                <div>
+                  <span>{"\u672a\u56de\u7b54"}</span>
+                  <strong>{surveyStatusDetail.unansweredCount}</strong>
                 </div>
               </div>
 
@@ -738,6 +749,30 @@ function AdminPage() {
                     )}
                   </section>
                 ))}
+
+              <section className="survey-unanswered-card">
+                <div className="survey-result-head">
+                  <h3>{"\u672a\u56de\u7b54\u8005"}</h3>
+                  <strong>{surveyStatusDetail.unansweredCount}{"\u4eba"}</strong>
+                </div>
+
+                {surveyStatusDetail.unansweredUsers.length > 0 ? (
+                  <ul>
+                    {surveyStatusDetail.unansweredUsers.map((user) => (
+                      <li key={`unanswered-${user.id}`}>
+                        <strong>{user.name}</strong>
+                        <span>{user.email}</span>
+                        <small>
+                          {roleLabels[user.role]} / {user.grade ? `${user.grade}\u5e74` : "\u5b66\u5e74\u672a\u6307\u5b9a"} / {user.department || "\u6240\u5c5e\u672a\u6307\u5b9a"}
+                        </small>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="all-read-message">{"\u5168\u54e1\u304c\u56de\u7b54\u6e08\u307f\u3067\u3059\u3002"}</p>
+                )}
+              </section>
+
               </div>
             </>
           )}
