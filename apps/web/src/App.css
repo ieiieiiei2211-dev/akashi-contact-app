@@ -2338,3 +2338,15 @@ textarea:focus {
   font-size: 13px;
   font-weight: 900;
 }
+
+
+.attachment-badge {
+  display: inline-flex;
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e0f2fe;
+  color: #075985;
+  font-size: 13px;
+  font-weight: 900;
+}
