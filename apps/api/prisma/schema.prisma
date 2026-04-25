@@ -23,6 +23,7 @@ model User {
   id            Int            @id @default(autoincrement())
   name          String
   email         String         @unique
+  studentNumber String?        @unique
   role          UserRole       @default(STUDENT)
   grade         Int?
   department    String?
