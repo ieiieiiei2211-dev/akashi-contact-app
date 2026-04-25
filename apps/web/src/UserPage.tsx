@@ -112,7 +112,7 @@ function UserPage() {
     setError('');
 
     try {
-      const userList = await fetchUsers();
+      await fetchUsers();
       const selectedUserId = nextUserId ?? currentUserId ?? null;
 
       setCurrentUserId(selectedUserId);

@@ -127,6 +127,7 @@ function AdminPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [studentNumber, setStudentNumber] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [role, setRole] = useState<UserRole>('STUDENT');
   const [userGrade, setUserGrade] = useState('');
   const [department, setDepartment] = useState('');
@@ -263,6 +264,7 @@ function AdminPage() {
           name,
           email,
           studentNumber: studentNumber || undefined,
+          loginPassword: loginPassword || undefined,
           role,
           grade: userGrade ? Number(userGrade) : undefined,
           department: department || undefined,
@@ -283,6 +285,7 @@ function AdminPage() {
       setName('');
       setEmail('');
       setStudentNumber('');
+      setLoginPassword('');
       setRole('STUDENT');
       setUserGrade('');
       setDepartment('');
@@ -1122,7 +1125,7 @@ function AdminPage() {
         <div className="section-heading">
           <div>
             <h2>ユーザー追加</h2>
-            <p>名前、メールアドレス、権限、学年、所属を入力してユーザーを登録します。</p>
+            <p>名前、メールアドレス、学籍番号、パスワード、権限、学年、所属を入力してユーザーを登録します。</p>
           </div>
         </div>
 
@@ -1153,6 +1156,17 @@ function AdminPage() {
               placeholder="例：E2211"
               pattern="[MECA][0-9]{4}"
               title="学籍番号は M/E/C/A のいずれか1文字 + 4桁の数字で入力してください"
+            />
+          </label>
+
+          <label>
+            パスワード
+            <input
+              type="password"
+              value={loginPassword}
+              onChange={(event) => setLoginPassword(event.target.value)}
+              placeholder="例：pass1234"
+              minLength={4}
             />
           </label>
 
