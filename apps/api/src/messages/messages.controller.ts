@@ -25,6 +25,13 @@ export class MessagesController {
     return this.messagesService.findAll();
   }
 
+  @Get('push-public-key')
+  getPushPublicKey() {
+    return {
+      publicKey: process.env.VAPID_PUBLIC_KEY ?? '',
+    };
+  }
+
   @Get('sent')
   findSent(@Query('userId') userId?: string) {
     if (userId === undefined) {
@@ -53,6 +60,30 @@ export class MessagesController {
   @Get(':id/notification-logs')
   getNotificationLogs(@Param('id', ParseIntPipe) id: number) {
     return this.messagesService.getNotificationLogs(id);
+  }
+
+  @Post('push-subscriptions')
+  savePushSubscription(
+    @Body()
+    body: {
+      userId?: number | string;
+      endpoint?: string;
+      p256dh?: string;
+      auth?: string;
+      keys?: {
+        p256dh?: string;
+        auth?: string;
+      };
+      userAgent?: string | null;
+    },
+  ) {
+    return this.messagesService.savePushSubscription({
+      userId: Number(body.userId),
+      endpoint: body.endpoint ?? '',
+      p256dh: body.p256dh ?? body.keys?.p256dh ?? '',
+      auth: body.auth ?? body.keys?.auth ?? '',
+      userAgent: body.userAgent ?? null,
+    });
   }
 
   @Post()

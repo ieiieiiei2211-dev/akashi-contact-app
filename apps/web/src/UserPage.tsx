@@ -83,6 +83,9 @@ function UserPage() {
   const [loginLoading, setLoginLoading] = useState(false);
   const [messageSearchText, setMessageSearchText] = useState('');
   const [messageFilter, setMessageFilter] = useState<'all' | 'unread' | 'confirmed' | 'attachments' | 'surveys'>('all');
+  const [pushNotice, setPushNotice] = useState('');
+  const [pushLoading, setPushLoading] = useState(false);
+  const [pushEnabled, setPushEnabled] = useState(false);
 
   const currentUser = useMemo(() => {
     return users.find((user) => user.id === currentUserId) ?? null;
@@ -138,6 +141,26 @@ function UserPage() {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+  useEffect(() => {
+    async function checkPushStatus() {
+      if (!currentUser || !('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+        setPushEnabled(false);
+        return;
+      }
+
+      try {
+        const registration = await navigator.serviceWorker.getRegistration('/sw.js');
+        const subscription = await registration?.pushManager.getSubscription();
+
+        setPushEnabled(Boolean(subscription) && Notification.permission === 'granted');
+      } catch {
+        setPushEnabled(false);
+      }
+    }
+
+    checkPushStatus();
+  }, [currentUser]);
 
 
   async function handleDemoLogin(event: FormEvent<HTMLFormElement>) {
@@ -232,6 +255,8 @@ function UserPage() {
     setMessages([]);
     setSelectedMessage(null);
     setLoginPassword('');
+    setPushEnabled(false);
+    setPushNotice('');
     setError('');
   }
 
@@ -388,6 +413,92 @@ function UserPage() {
     const departmentText = user.department || '\u6240\u5c5e\u672a\u6307\u5b9a';
 
     return `${roleLabels[user.role]} / ${gradeText} / ${departmentText}`;
+  }
+
+  function urlBase64ToUint8Array(base64String: string) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; i += 1) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+
+    return outputArray;
+  }
+
+  async function handleEnablePushNotification() {
+    if (!currentUser) {
+      setPushNotice('ログイン中のユーザーが見つかりません。');
+      return;
+    }
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
+      setPushNotice('このブラウザはプッシュ通知に対応していません。');
+      return;
+    }
+
+    setPushLoading(true);
+    setPushNotice('');
+
+    try {
+      const permission = await Notification.requestPermission();
+
+      if (permission !== 'granted') {
+        setPushEnabled(false);
+        setPushNotice('通知が許可されませんでした。ブラウザ設定を確認してください。');
+        return;
+      }
+
+      const keyResponse = await fetch('http://localhost:3000/messages/push-public-key');
+
+      if (!keyResponse.ok) {
+        throw new Error('プッシュ通知用の公開鍵を取得できませんでした。');
+      }
+
+      const keyData: { publicKey: string } = await keyResponse.json();
+
+      if (!keyData.publicKey) {
+        throw new Error('VAPID_PUBLIC_KEY が設定されていません。');
+      }
+
+      const registration = await navigator.serviceWorker.register('/sw.js');
+
+      const existingSubscription = await registration.pushManager.getSubscription();
+      const subscription =
+        existingSubscription ??
+        (await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(keyData.publicKey),
+        }));
+
+      const subscriptionJson = subscription.toJSON();
+
+      const response = await fetch('http://localhost:3000/messages/push-subscriptions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          endpoint: subscription.endpoint,
+          keys: subscriptionJson.keys,
+          userAgent: navigator.userAgent,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('通知設定の保存に失敗しました。');
+      }
+
+      setPushEnabled(true);
+      setPushNotice('プッシュ通知を有効にしました。');
+    } catch (err) {
+      setPushNotice(err instanceof Error ? err.message : 'プッシュ通知の設定に失敗しました。');
+    } finally {
+      setPushLoading(false);
+    }
   }
 
   if (!currentUser) {
@@ -782,6 +893,27 @@ function UserPage() {
                   <dd>{getUserInfo(currentUser)}</dd>
                 </div>
               </dl>
+
+              <section className="akashi-push-setting-box">
+                <div>
+                  <strong>プッシュ通知</strong>
+                  <p>新しい連絡が届いたときに、この端末で通知を受け取れるようにします。</p>
+                  <p className={pushEnabled ? 'akashi-push-status on' : 'akashi-push-status off'}>
+                    {pushEnabled ? 'プッシュ通知はオンになっています' : 'プッシュ通知はオフです'}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="akashi-push-enable-button"
+                  onClick={handleEnablePushNotification}
+                  disabled={pushLoading}
+                >
+                  {pushLoading ? '設定中...' : pushEnabled ? '通知設定を更新する' : 'プッシュ通知を有効にする'}
+                </button>
+
+                {pushNotice && <p className="akashi-push-notice">{pushNotice}</p>}
+              </section>
 
               <button type="button" onClick={handleDemoLogout}>
                 {"\u30ed\u30b0\u30a2\u30a6\u30c8"}

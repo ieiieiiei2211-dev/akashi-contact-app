@@ -3544,3 +3544,376 @@ select:focus {
     padding-inline: 11px;
   }
 }
+
+/* ===== Admin notification log panel ===== */
+
+.notification-log-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #0b3f75;
+  background: #e4f1fb;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.notification-log-button:hover {
+  background: #cfe7f8;
+}
+
+.notification-log-panel {
+  border-left: 6px solid #0b3f75;
+}
+
+.notification-log-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin: 16px 0 20px;
+}
+
+.notification-log-summary div {
+  padding: 14px;
+  border-radius: 16px;
+  background: #eef6fc;
+}
+
+.notification-log-summary span {
+  display: block;
+  margin-bottom: 6px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.notification-log-summary strong {
+  color: #0b3f75;
+  font-size: 24px;
+}
+
+.notification-log-list {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.notification-log-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid #dbe7f3;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.notification-log-item > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.notification-log-item strong {
+  color: #111827;
+}
+
+.notification-log-item span,
+.notification-log-item small,
+.notification-log-item time {
+  color: #64748b;
+}
+
+.notification-log-meta {
+  display: grid;
+  gap: 5px;
+  justify-items: end;
+  min-width: 120px;
+}
+
+.notification-log-meta span {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.notification-log-meta strong {
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: white;
+  font-size: 12px;
+}
+
+.notification-log-item.status-sent .notification-log-meta strong {
+  background: #16a34a;
+}
+
+.notification-log-item.status-skipped .notification-log-meta strong {
+  background: #f59e0b;
+}
+
+.notification-log-item.status-failed .notification-log-meta strong {
+  background: #dc2626;
+}
+
+@media (max-width: 900px) {
+  .notification-log-summary,
+  .notification-log-item {
+    grid-template-columns: 1fr;
+  }
+
+  .notification-log-meta {
+    justify-items: start;
+  }
+}
+
+/* ===== User push notification setting ===== */
+
+.akashi-push-setting-box {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 16px;
+  border: 1px solid #cfe2f2;
+  border-radius: 18px;
+  background: #f7fbff;
+}
+
+.akashi-push-setting-box strong {
+  color: #063b63;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.akashi-push-setting-box p {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.akashi-push-enable-button {
+  margin: 0 !important;
+  color: #ffffff !important;
+  background: #0b63a8 !important;
+}
+
+.akashi-push-enable-button:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.akashi-push-notice {
+  margin: 0 !important;
+  padding: 10px 12px;
+  border-radius: 12px;
+  color: #063b63 !important;
+  background: #eaf4fb;
+  font-size: 13px !important;
+  font-weight: 800;
+}
+
+/* ===== Push notification ON/OFF status ===== */
+
+.akashi-push-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin-top: 10px !important;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px !important;
+  font-weight: 900;
+}
+
+.akashi-push-status.on {
+  color: #166534 !important;
+  background: #dcfce7;
+}
+
+.akashi-push-status.on::before {
+  content: "●";
+  margin-right: 6px;
+  color: #22c55e;
+}
+
+.akashi-push-status.off {
+  color: #92400e !important;
+  background: #fef3c7;
+}
+
+.akashi-push-status.off::before {
+  content: "●";
+  margin-right: 6px;
+  color: #f59e0b;
+}
+
+/* ===== Notification log summary by type ===== */
+
+.notification-log-groups {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0 20px;
+}
+
+.notification-log-type-card {
+  padding: 16px;
+  border: 1px solid #dbe7f3;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.notification-log-type-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.notification-log-type-head h3 {
+  margin: 0;
+  color: #0b3f75;
+  font-size: 18px;
+}
+
+.notification-log-type-head span {
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #0b3f75;
+  background: #e4f1fb;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.notification-log-type-card .notification-log-summary {
+  grid-template-columns: repeat(2, 1fr);
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .notification-log-groups {
+    grid-template-columns: 1fr;
+  }
+}
+/* ===== Admin text visibility fix ===== */
+
+.akashi-admin-main h1,
+.akashi-admin-main h2,
+.akashi-admin-main h3,
+.akashi-admin-panel h1,
+.akashi-admin-panel h2,
+.akashi-admin-panel h3,
+.notification-log-panel h1,
+.notification-log-panel h2,
+.notification-log-panel h3 {
+  color: #17324d !important;
+  opacity: 1 !important;
+}
+
+.akashi-admin-main p,
+.akashi-admin-panel p,
+.notification-log-panel p {
+  color: #4b6278 !important;
+  opacity: 1 !important;
+}
+
+.akashi-admin-main label,
+.akashi-admin-panel label,
+.notification-log-panel label,
+.akashi-admin-main span,
+.akashi-admin-panel span,
+.notification-log-panel span {
+  color: #24435f;
+}
+
+.akashi-admin-main section,
+.akashi-admin-panel,
+.notification-log-panel {
+  background: #ffffff;
+}
+
+.notification-log-type-card {
+  background: #f8fbff;
+}
+/* ===== Fix admin page text contrast ===== */
+
+.page {
+  color: #172536;
+}
+
+.page .card {
+  color: #172536;
+  background: #ffffff;
+}
+
+.page .card .section-heading h2,
+.page .card h2,
+.page .card h3 {
+  color: #0b2f4f !important;
+  opacity: 1 !important;
+  font-weight: 900;
+}
+
+.page .card .section-heading p,
+.page .card p,
+.page .card .muted {
+  color: #4b6075 !important;
+  opacity: 1 !important;
+}
+
+.page .card label,
+.page .card dt,
+.page .card th {
+  color: #17324d !important;
+  opacity: 1 !important;
+}
+
+.page .card input,
+.page .card textarea,
+.page .card select {
+  color: #111827 !important;
+  background: #ffffff !important;
+}
+
+/* 通知ログ画面 */
+.page .notification-log-panel .section-heading h2,
+.page .notification-log-panel h2,
+.page .notification-log-panel h3 {
+  color: #0b2f4f !important;
+  opacity: 1 !important;
+}
+
+.page .notification-log-panel .section-heading p,
+.page .notification-log-panel p {
+  color: #4b6075 !important;
+  opacity: 1 !important;
+}
+
+/* 連絡作成・連絡一覧・ユーザー一覧の見出しが白飛びする問題対策 */
+.page .section-heading h2 {
+  color: #0b2f4f !important;
+  text-shadow: none !important;
+}
+
+.page .section-heading p {
+  color: #4b6075 !important;
+  text-shadow: none !important;
+}
+
+/* フィルター欄の文字 */
+.page .message-filter-bar label,
+.page .user-filter-bar label {
+  color: #17324d !important;
+}
+
+.page .message-filter-bar p,
+.page .user-filter-bar p {
+  color: #0b3f75 !important;
+  font-weight: 900;
+}

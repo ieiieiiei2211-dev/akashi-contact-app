@@ -101,6 +101,31 @@ type SurveyStatusDetail = {
   unansweredUsers: SurveyStatusUser[];
 };
 
+type NotificationLog = {
+  id: number;
+  messageId: number;
+  userId: number;
+  type: 'EMAIL' | 'PUSH';
+  status: 'SENT' | 'FAILED' | 'SKIPPED';
+  sentAt: string;
+  errorMessage?: string | null;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    studentNumber?: string | null;
+    role: UserRole;
+    grade?: number | null;
+    department?: string | null;
+    isActive: boolean;
+  };
+};
+
+type NotificationLogDetail = {
+  message: Message;
+  logs: NotificationLog[];
+};
+
 function getDepartmentShortLabel(department?: string | null) {
   if (!department) return null;
 
@@ -171,6 +196,8 @@ function AdminPage() {
   const [readStatusDetail, setReadStatusDetail] = useState<ReadStatusDetail | null>(null);
   const [loadingSurveyStatus, setLoadingSurveyStatus] = useState(false);
   const [surveyStatusDetail, setSurveyStatusDetail] = useState<SurveyStatusDetail | null>(null);
+  const [loadingNotificationLogs, setLoadingNotificationLogs] = useState(false);
+  const [notificationLogDetail, setNotificationLogDetail] = useState<NotificationLogDetail | null>(null);
 
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
@@ -681,6 +708,31 @@ function AdminPage() {
     }
   }
 
+  async function handleShowNotificationLogs(message: Message) {
+    setNotice('');
+    setError('');
+    setLoadingNotificationLogs(true);
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}/notification-logs`);
+
+      if (!response.ok) {
+        throw new Error('通知ログの取得に失敗しました');
+      }
+
+      const logs: NotificationLog[] = await response.json();
+      setNotificationLogDetail({
+        message,
+        logs,
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '不明なエラーが発生しました');
+    } finally {
+      setLoadingNotificationLogs(false);
+    }
+  }
+
   async function handleDeleteMessage(message: Message) {
     const ok = window.confirm(`${message.title} を削除しますか？`);
 
@@ -750,11 +802,43 @@ function AdminPage() {
     return `${roleText} / ${gradeText} / ${departmentText}`;
   }
 
-  function formatUserInfo(user: ReadStatusDetailUser) {
+  function formatUserInfo(user: ReadStatusDetailUser | SurveyStatusUser | NotificationLog['user']) {
     const gradeText = user.grade ? `${user.grade}年` : '学年未指定';
     const departmentText = user.department || '所属未指定';
 
     return `${roleLabels[user.role]} / ${gradeText} / ${departmentText}`;
+  }
+
+  function getNotificationLogCounts(logs: NotificationLog[]) {
+    return logs.reduce(
+      (counts, log) => {
+        counts.total += 1;
+
+        if (log.status === 'SENT') {
+          counts.sent += 1;
+        }
+
+        if (log.status === 'FAILED') {
+          counts.failed += 1;
+        }
+
+        if (log.status === 'SKIPPED') {
+          counts.skipped += 1;
+        }
+
+        return counts;
+      },
+      {
+        total: 0,
+        sent: 0,
+        failed: 0,
+        skipped: 0,
+      },
+    );
+  }
+
+  function getNotificationLogCountsByType(logs: NotificationLog[], type: NotificationLog['type']) {
+    return getNotificationLogCounts(logs.filter((log) => log.type === type));
   }
 
   return (
@@ -790,6 +874,119 @@ function AdminPage() {
 
       {notice && <p className="global-success">{notice}</p>}
       {error && <p className="global-error">{error}</p>}
+
+      {(loadingNotificationLogs || notificationLogDetail) && (
+        <section className="card notification-log-panel">
+          <div className="section-heading">
+            <div>
+              <h2>通知送信結果</h2>
+              <p>
+                {notificationLogDetail
+                  ? `連絡「${notificationLogDetail.message.title}」の通知ログです。`
+                  : '通知ログを読み込んでいます。'}
+              </p>
+            </div>
+
+            {notificationLogDetail && (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setNotificationLogDetail(null)}
+              >
+                閉じる
+              </button>
+            )}
+          </div>
+
+          {loadingNotificationLogs && <p className="muted">読み込み中...</p>}
+
+          {notificationLogDetail && !loadingNotificationLogs && (() => {
+            const emailCounts = getNotificationLogCountsByType(notificationLogDetail.logs, 'EMAIL');
+            const pushCounts = getNotificationLogCountsByType(notificationLogDetail.logs, 'PUSH');
+
+            return (
+              <>
+                <div className="notification-log-groups">
+                  <section className="notification-log-type-card">
+                    <div className="notification-log-type-head">
+                      <h3>メール通知</h3>
+                      <span>EMAIL</span>
+                    </div>
+
+                    <div className="notification-log-summary">
+                      <div>
+                        <span>対象</span>
+                        <strong>{emailCounts.total}</strong>
+                      </div>
+                      <div>
+                        <span>送信済み</span>
+                        <strong>{emailCounts.sent}</strong>
+                      </div>
+                      <div>
+                        <span>未送信</span>
+                        <strong>{emailCounts.skipped}</strong>
+                      </div>
+                      <div>
+                        <span>失敗</span>
+                        <strong>{emailCounts.failed}</strong>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="notification-log-type-card">
+                    <div className="notification-log-type-head">
+                      <h3>プッシュ通知</h3>
+                      <span>PUSH</span>
+                    </div>
+
+                    <div className="notification-log-summary">
+                      <div>
+                        <span>対象</span>
+                        <strong>{pushCounts.total}</strong>
+                      </div>
+                      <div>
+                        <span>送信済み</span>
+                        <strong>{pushCounts.sent}</strong>
+                      </div>
+                      <div>
+                        <span>未送信</span>
+                        <strong>{pushCounts.skipped}</strong>
+                      </div>
+                      <div>
+                        <span>失敗</span>
+                        <strong>{pushCounts.failed}</strong>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                {notificationLogDetail.logs.length > 0 ? (
+                  <ul className="notification-log-list">
+                    {notificationLogDetail.logs.map((log) => (
+                      <li key={log.id} className={`notification-log-item status-${log.status.toLowerCase()}`}>
+                        <div>
+                          <strong>{log.user.name}</strong>
+                          <span>{log.user.email || 'メールアドレス未登録'}</span>
+                          <small>{formatUserInfo(log.user)}</small>
+                          {log.errorMessage && <small>理由: {log.errorMessage}</small>}
+                        </div>
+
+                        <div className="notification-log-meta">
+                          <span>{log.type}</span>
+                          <strong>{log.status}</strong>
+                          <time>{new Date(log.sentAt).toLocaleString('ja-JP')}</time>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="muted">この連絡には通知ログがありません。</p>
+                )}
+              </>
+            );
+          })()}
+        </section>
+      )}
 
       {(loadingSurveyStatus || surveyStatusDetail) && (
         <section className="card survey-detail-panel">
@@ -1133,6 +1330,16 @@ function AdminPage() {
                         onClick={() => handleShowSurveyStatus(message)}
                       >
                         {"\u30a2\u30f3\u30b1\u30fc\u30c8\u96c6\u8a08"}
+                      </button>
+                    )}
+
+                    {message.status === 'SENT' && (
+                      <button
+                        type="button"
+                        className="notification-log-button"
+                        onClick={() => handleShowNotificationLogs(message)}
+                      >
+                        通知ログ
                       </button>
                     )}
 
