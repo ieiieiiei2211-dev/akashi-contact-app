@@ -1,7 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -22,6 +23,7 @@ export class UsersService {
           name: createUserDto.name,
           email: createUserDto.email,
           studentNumber: createUserDto.studentNumber ?? null,
+          loginPassword: createUserDto.loginPassword ?? null,
           role: createUserDto.role,
           grade: createUserDto.grade ?? null,
           department: createUserDto.department ?? null,
@@ -60,6 +62,10 @@ export class UsersService {
             updateUserDto.studentNumber === undefined
               ? undefined
               : updateUserDto.studentNumber,
+          loginPassword:
+            updateUserDto.loginPassword === undefined
+              ? undefined
+              : updateUserDto.loginPassword,
           role: updateUserDto.role,
           grade:
             updateUserDto.grade === undefined
@@ -83,6 +89,32 @@ export class UsersService {
 
       throw error;
     }
+  }
+
+  async login(loginUserDto: LoginUserDto) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        studentNumber: loginUserDto.studentNumber,
+        isActive: true,
+      },
+    });
+
+    if (!user || user.loginPassword !== loginUserDto.loginPassword) {
+      throw new UnauthorizedException('学籍番号またはパスワードが正しくありません');
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      studentNumber: user.studentNumber,
+      role: user.role,
+      grade: user.grade,
+      department: user.department,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 
   deactivate(id: number) {

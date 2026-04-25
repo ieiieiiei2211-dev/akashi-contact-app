@@ -24,6 +24,7 @@ model User {
   name          String
   email         String         @unique
   studentNumber String?        @unique
+  loginPassword String?
   role          UserRole       @default(STUDENT)
   grade         Int?
   department    String?

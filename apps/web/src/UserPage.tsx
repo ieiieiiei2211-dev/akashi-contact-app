@@ -51,6 +51,7 @@ type User = {
   id: number;
   name: string;
   email: string;
+  studentNumber?: string | null;
   role: UserRole;
   grade?: number | null;
   department?: string | null;
@@ -290,7 +291,7 @@ function UserPage() {
               >
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.name} / {roleLabels[user.role]}
+                    {user.studentNumber ? `${user.studentNumber} / ` : ''}{user.name} / {roleLabels[user.role]}
                   </option>
                 ))}
               </select>

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsEnum, IsInt, IsOptional, IsString, Max, Min, Matches } from 'class-validator';
+import { IsEmail, IsEnum, IsInt, IsOptional, IsString, Max, Min, Matches, MinLength } from 'class-validator';
 import { UserRole } from '@prisma/client';
 
 export class UpdateUserDto {
@@ -17,6 +17,11 @@ export class UpdateUserDto {
     message: '学籍番号は M/E/C/A のいずれか1文字 + 4桁の数字で入力してください',
   })
   studentNumber?: string | null;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(4)
+  loginPassword?: string | null;
 
   @IsOptional()
   @IsEnum(UserRole)
