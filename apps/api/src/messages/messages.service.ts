@@ -256,6 +256,35 @@ export class MessagesService {
       throw new NotFoundException('アンケートが見つかりません');
     }
 
+    const targetUsers = await this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        ...(survey.message.targetRole ? { role: survey.message.targetRole } : {}),
+        ...(survey.message.targetGrade ? { grade: survey.message.targetGrade } : {}),
+        ...(survey.message.targetDepartment
+          ? { department: survey.message.targetDepartment }
+          : {}),
+      },
+      orderBy: {
+        id: 'asc',
+      },
+    });
+
+    const answeredUserIds = new Set(
+      survey.answers.map((answer) => answer.userId),
+    );
+
+    const unansweredUsers = targetUsers
+      .filter((user) => !answeredUserIds.has(user.id))
+      .map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        grade: user.grade,
+        department: user.department,
+      }));
+
     const summary = survey.choices.map((choice) => ({
       choiceId: choice.id,
       label: choice.label,
@@ -276,13 +305,19 @@ export class MessagesService {
         id: survey.message.id,
         title: survey.message.title,
         status: survey.message.status,
+        targetRole: survey.message.targetRole,
+        targetGrade: survey.message.targetGrade,
+        targetDepartment: survey.message.targetDepartment,
       },
       survey: {
         id: survey.id,
         question: survey.question,
       },
+      targetCount: targetUsers.length,
       totalAnswerCount: survey.answers.length,
+      unansweredCount: unansweredUsers.length,
       summary,
+      unansweredUsers,
     };
   }
 
