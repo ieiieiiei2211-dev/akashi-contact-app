@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 import './App.css';
 
 type UserRole = 'STUDENT' | 'PARENT' | 'TEACHER' | 'STAFF' | 'ADMIN';
@@ -73,6 +74,9 @@ function UserPage() {
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [loginStudentNumber, setLoginStudentNumber] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
 
   const currentUser = useMemo(() => {
     return users.find((user) => user.id === currentUserId) ?? null;
@@ -109,7 +113,7 @@ function UserPage() {
 
     try {
       const userList = await fetchUsers();
-      const selectedUserId = nextUserId ?? currentUserId ?? userList[0]?.id ?? null;
+      const selectedUserId = nextUserId ?? currentUserId ?? null;
 
       setCurrentUserId(selectedUserId);
 
@@ -128,6 +132,59 @@ function UserPage() {
   useEffect(() => {
     fetchInitialData();
   }, []);
+
+
+  async function handleDemoLogin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setError('');
+    setLoginLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:3000/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          studentNumber: loginStudentNumber.trim().toUpperCase(),
+          loginPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('学籍番号またはパスワードが正しくありません。');
+      }
+
+      const user: User = await response.json();
+
+      setUsers((currentUsers) => {
+        if (currentUsers.some((item) => item.id === user.id)) {
+          return currentUsers;
+        }
+
+        return [...currentUsers, user];
+      });
+
+      setCurrentUserId(user.id);
+      setSelectedMessage(null);
+      setLoginStudentNumber(user.studentNumber ?? '');
+      setLoginPassword('');
+      await fetchSentMessages(user.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'ログインに失敗しました。');
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
+  function handleDemoLogout() {
+    setCurrentUserId(null);
+    setMessages([]);
+    setSelectedMessage(null);
+    setLoginPassword('');
+    setError('');
+  }
 
   async function handleChangeUser(userIdText: string) {
     const userId = Number(userIdText);
@@ -246,6 +303,50 @@ function UserPage() {
     return `${roleLabels[user.role]} / ${gradeText} / ${departmentText}`;
   }
 
+  if (!currentUser) {
+    return (
+      <main className="akashi-user-shell">
+        <section className="akashi-login-card">
+          <div className="akashi-login-header">
+            <span>AKASHI KOSEN</span>
+            <h1>学生連絡ポータル</h1>
+            <p>学籍番号とパスワードでログインしてください。</p>
+          </div>
+
+          <form className="akashi-login-form" onSubmit={handleDemoLogin}>
+            <label>
+              学籍番号
+              <input
+                value={loginStudentNumber}
+                onChange={(event) => setLoginStudentNumber(event.target.value.toUpperCase())}
+                placeholder="例：E2211"
+                pattern="[MECA][0-9]{4}"
+                title="学籍番号は M/E/C/A のいずれか1文字 + 4桁の数字で入力してください"
+              />
+            </label>
+
+            <label>
+              パスワード
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(event) => setLoginPassword(event.target.value)}
+                placeholder="例：pass1234"
+              />
+            </label>
+
+            <button type="submit" disabled={loginLoading}>
+              {loginLoading ? 'ログイン中...' : 'ログイン'}
+            </button>
+          </form>
+
+          <p className="akashi-login-demo">発表用デモ：E2211 / pass1234</p>
+          {error && <p className="akashi-login-error">{error}</p>}
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="akashi-user-shell">
       <header className="akashi-user-header">
@@ -298,10 +399,16 @@ function UserPage() {
             </label>
 
             {currentUser && (
-              <p>
-                <span>{'\u73fe\u5728\u306e\u6761\u4ef6'}</span>
-                <strong>{getUserInfo(currentUser)}</strong>
-              </p>
+              <>
+                <p>
+                  <span>{'\u73fe\u5728\u306e\u6761\u4ef6'}</span>
+                  <strong>{getUserInfo(currentUser)}</strong>
+                </p>
+
+                <button type="button" className="akashi-logout-button" onClick={handleDemoLogout}>
+                  ログアウト
+                </button>
+              </>
             )}
           </section>
 
