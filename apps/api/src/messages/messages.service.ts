@@ -15,6 +15,11 @@ type SavePushSubscriptionInput = {
   userAgent?: string | null;
 };
 
+type DisablePushSubscriptionInput = {
+  userId?: number;
+  endpoint: string;
+};
+
 @Injectable()
 export class MessagesService {
   constructor(private readonly prisma: PrismaService) {}
@@ -58,6 +63,29 @@ export class MessagesService {
         userAgent: input.userAgent ?? null,
       },
     });
+  }
+
+  async disablePushSubscription(input: DisablePushSubscriptionInput) {
+    if (!input.endpoint) {
+      throw new BadRequestException('endpoint is required');
+    }
+
+    const result = await this.prisma.pushSubscription.updateMany({
+      where: {
+        endpoint: input.endpoint,
+        ...(input.userId && !Number.isNaN(input.userId)
+          ? { userId: input.userId }
+          : {}),
+      },
+      data: {
+        isActive: false,
+      },
+    });
+
+    return {
+      disabled: result.count > 0,
+      count: result.count,
+    };
   }
 
   findAll() {

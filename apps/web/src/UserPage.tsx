@@ -428,6 +428,58 @@ function UserPage() {
     return outputArray;
   }
 
+  async function handleDisablePushNotification() {
+    if (!currentUser) {
+      setPushNotice('ログイン中のユーザーが見つかりません。');
+      return;
+    }
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setPushEnabled(false);
+      setPushNotice('このブラウザではプッシュ通知を管理できません。');
+      return;
+    }
+
+    setPushLoading(true);
+    setPushNotice('');
+
+    try {
+      const registration = await navigator.serviceWorker.getRegistration('/sw.js');
+      const subscription = await registration?.pushManager.getSubscription();
+
+      if (!subscription) {
+        setPushEnabled(false);
+        setPushNotice('この端末ではプッシュ通知はすでにオフです。');
+        return;
+      }
+
+      const endpoint = subscription.endpoint;
+      await subscription.unsubscribe();
+
+      const response = await fetch('http://localhost:3000/messages/push-subscriptions/disable', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          endpoint,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('通知設定の解除に失敗しました。');
+      }
+
+      setPushEnabled(false);
+      setPushNotice('プッシュ通知をオフにしました。');
+    } catch (err) {
+      setPushNotice(err instanceof Error ? err.message : 'プッシュ通知の解除に失敗しました。');
+    } finally {
+      setPushLoading(false);
+    }
+  }
+
   async function handleEnablePushNotification() {
     if (!currentUser) {
       setPushNotice('ログイン中のユーザーが見つかりません。');
@@ -911,6 +963,17 @@ function UserPage() {
                 >
                   {pushLoading ? '設定中...' : pushEnabled ? '通知設定を更新する' : 'プッシュ通知を有効にする'}
                 </button>
+
+                {pushEnabled && (
+                  <button
+                    type="button"
+                    className="akashi-push-disable-button"
+                    onClick={handleDisablePushNotification}
+                    disabled={pushLoading}
+                  >
+                    プッシュ通知をオフにする
+                  </button>
+                )}
 
                 {pushNotice && <p className="akashi-push-notice">{pushNotice}</p>}
               </section>

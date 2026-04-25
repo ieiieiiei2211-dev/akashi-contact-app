@@ -86,6 +86,20 @@ export class MessagesController {
     });
   }
 
+
+  @Patch('push-subscriptions/disable')
+  disablePushSubscription(
+    @Body()
+    body: {
+      userId?: number | string;
+      endpoint?: string;
+    },
+  ) {
+    return this.messagesService.disablePushSubscription({
+      userId: body.userId === undefined ? undefined : Number(body.userId),
+      endpoint: body.endpoint ?? '',
+    });
+  }
   @Post()
   create(@Body() createMessageDto: CreateMessageDto) {
     return this.messagesService.create(createMessageDto);
