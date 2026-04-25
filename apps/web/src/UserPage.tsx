@@ -180,6 +180,49 @@ function UserPage() {
     }
   }
 
+
+  async function handleDeveloperLogin() {
+    setError('');
+    setLoginLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:3000/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          studentNumber: 'E2211',
+          loginPassword: 'pass1234',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Developer login failed.');
+      }
+
+      const user: User = await response.json();
+
+      setUsers((currentUsers) => {
+        if (currentUsers.some((item) => item.id === user.id)) {
+          return currentUsers;
+        }
+
+        return [...currentUsers, user];
+      });
+
+      setCurrentUserId(user.id);
+      setSelectedMessage(null);
+      setLoginStudentNumber(user.studentNumber ?? '');
+      setLoginPassword('');
+      await fetchSentMessages(user.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Developer login failed.');
+    } finally {
+      setLoginLoading(false);
+    }
+  }
+
   function handleDemoLogout() {
     setCurrentUserId(null);
     setMessages([]);
@@ -344,6 +387,15 @@ function UserPage() {
           </form>
 
           <p className="akashi-login-demo">発表用デモ：E2211 / pass1234</p>
+
+          <button
+            type="button"
+            className="akashi-dev-login-button"
+            onClick={handleDeveloperLogin}
+            disabled={loginLoading}
+          >
+            {"\u958b\u767a\u7528\u30ed\u30b0\u30a4\u30f3"}
+          </button>
           {error && <p className="akashi-login-error">{error}</p>}
         </section>
       </main>

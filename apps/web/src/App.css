@@ -2279,3 +2279,24 @@ textarea:focus {
   font-weight: 900;
   text-decoration: none;
 }
+
+
+.akashi-dev-login-button {
+  min-height: 46px;
+  border: none;
+  border-radius: 14px;
+  color: #1e3a8a;
+  background: #bfdbfe;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.akashi-dev-login-button:hover {
+  background: #93c5fd;
+}
+
+.akashi-dev-login-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
