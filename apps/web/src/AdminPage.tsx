@@ -9,6 +9,7 @@ type User = {
   id: number;
   name: string;
   email: string;
+  studentNumber?: string | null;
   role: UserRole;
   grade?: number | null;
   department?: string | null;
@@ -125,6 +126,7 @@ function AdminPage() {
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [studentNumber, setStudentNumber] = useState('');
   const [role, setRole] = useState<UserRole>('STUDENT');
   const [userGrade, setUserGrade] = useState('');
   const [department, setDepartment] = useState('');
@@ -260,6 +262,7 @@ function AdminPage() {
         body: JSON.stringify({
           name,
           email,
+          studentNumber: studentNumber || undefined,
           role,
           grade: userGrade ? Number(userGrade) : undefined,
           department: department || undefined,
@@ -279,6 +282,7 @@ function AdminPage() {
 
       setName('');
       setEmail('');
+      setStudentNumber('');
       setRole('STUDENT');
       setUserGrade('');
       setDepartment('');
@@ -1142,6 +1146,17 @@ function AdminPage() {
           </label>
 
           <label>
+            学籍番号
+            <input
+              value={studentNumber}
+              onChange={(event) => setStudentNumber(event.target.value.toUpperCase())}
+              placeholder="例：E2211"
+              pattern="[MECA][0-9]{4}"
+              title="学籍番号は M/E/C/A のいずれか1文字 + 4桁の数字で入力してください"
+            />
+          </label>
+
+          <label>
             権限
             <select
               value={role}
@@ -1207,7 +1222,7 @@ function AdminPage() {
             <input
               value={userSearch}
               onChange={(event) => setUserSearch(event.target.value)}
-              placeholder="名前・メール・所属で検索"
+              placeholder="名前・メール・学籍番号・所属で検索"
             />
           </label>
 
@@ -1265,6 +1280,7 @@ function AdminPage() {
                   <th>ID</th>
                   <th>名前</th>
                   <th>メールアドレス</th>
+                  <th>学籍番号</th>
                   <th>権限</th>
                   <th>学年</th>
                   <th>所属</th>
@@ -1279,6 +1295,7 @@ function AdminPage() {
                     <td>{user.id}</td>
                     <td className="name-cell">{user.name}</td>
                     <td>{user.email}</td>
+                    <td>{user.studentNumber || '-'}</td>
                     <td>
                       <span className={`role-badge role-${user.role.toLowerCase()}`}>
                         {roleLabels[user.role]}
