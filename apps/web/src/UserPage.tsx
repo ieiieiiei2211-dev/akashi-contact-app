@@ -189,44 +189,6 @@ function UserPage() {
         throw new Error('\u958b\u5c01\u78ba\u8a8d\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
       }
 
-      await fetchSentMessages(currentUser.id);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
-    }
-  }
-
-  function getMySurveyAnswer(message: Message) {
-    if (!currentUser || !message.survey) {
-      return null;
-    }
-
-    return message.survey.answers.find((answer) => answer.userId === currentUser.id) ?? null;
-  }
-
-  async function handleAnswerSurvey(message: Message, choiceId: number) {
-    if (!currentUser) {
-      setError('\u56de\u7b54\u7528\u306e\u30e6\u30fc\u30b6\u30fc\u304c\u9078\u629e\u3055\u308c\u3066\u3044\u307e\u305b\u3093');
-      return;
-    }
-
-    setError('');
-
-    try {
-      const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-answer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: currentUser.id,
-          choiceId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('\u30a2\u30f3\u30b1\u30fc\u30c8\u56de\u7b54\u306e\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f');
-      }
-
       const updatedMessages = await fetchSentMessages(currentUser.id);
       const updatedMessage = updatedMessages.find((item) => item.id === message.id) ?? null;
       setSelectedMessage(updatedMessage);
@@ -234,6 +196,7 @@ function UserPage() {
       setError(err instanceof Error ? err.message : '\u4e0d\u660e\u306a\u30a8\u30e9\u30fc\u304c\u767a\u751f\u3057\u307e\u3057\u305f');
     }
   }
+
   function getUserInfo(user: User) {
     const gradeText = user.grade ? `${user.grade}\u5e74` : '\u5b66\u5e74\u672a\u6307\u5b9a';
     const departmentText = user.department || '\u6240\u5c5e\u672a\u6307\u5b9a';
