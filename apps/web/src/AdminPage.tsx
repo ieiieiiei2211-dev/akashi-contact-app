@@ -504,6 +504,51 @@ function AdminPage() {
     }
   }
 
+
+  async function handleShowSurveyStatus(message: Message) {
+    setNotice("");
+    setError("");
+
+    try {
+      const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-status`);
+
+      if (!response.ok) {
+        throw new Error("Failed to load survey status.");
+      }
+
+      const data = (await response.json()) as {
+        message: {
+          id: number;
+          title: string;
+          status: MessageStatus;
+        };
+        survey: {
+          id: number;
+          question: string;
+        };
+        totalAnswerCount: number;
+        summary: Array<{
+          choiceId: number;
+          label: string;
+          count: number;
+        }>;
+      };
+
+      const summaryText = data.summary
+        .map((item) => `・${item.label}: ${item.count}件`)
+        .join("\n");
+
+      window.alert(
+        `アンケート集計: ${data.message.title}\n\n` +
+          `質問: ${data.survey.question}\n` +
+          `回答数: ${data.totalAnswerCount}\n\n` +
+          summaryText,
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error occurred.");
+    }
+  }
+
   async function handleDeleteMessage(message: Message) {
     const ok = window.confirm(`${message.title} を削除しますか？`);
 
@@ -779,6 +824,16 @@ function AdminPage() {
                     >
                       既読状況
                     </button>
+
+                    {message.survey && (
+                      <button
+                        type="button"
+                        className="survey-status-button"
+                        onClick={() => handleShowSurveyStatus(message)}
+                      >
+                        {"\u30a2\u30f3\u30b1\u30fc\u30c8\u96c6\u8a08"}
+                      </button>
+                    )}
 
                     {message.status === 'DRAFT' && (
                       <>

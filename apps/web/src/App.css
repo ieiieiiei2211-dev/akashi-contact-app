@@ -1918,3 +1918,19 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+
+.survey-status-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  color: #5b21b6;
+  background: #ede9fe;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.survey-status-button:hover {
+  background: #ddd6fe;
+}
