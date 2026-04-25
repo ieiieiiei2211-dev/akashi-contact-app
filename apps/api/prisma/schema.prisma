@@ -45,6 +45,7 @@ model Message {
   targetRole       UserRole?
   targetGrade      Int?
   targetDepartment String?
+  targetGroupLabel String?
   createdAt        DateTime      @default(now())
   updatedAt        DateTime      @default(now()) @updatedAt
   readStatuses     ReadStatus[]

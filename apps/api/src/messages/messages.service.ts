@@ -96,6 +96,7 @@ export class MessagesService {
         targetRole: createMessageDto.targetRole ?? null,
         targetGrade: createMessageDto.targetGrade ?? null,
         targetDepartment: createMessageDto.targetDepartment ?? null,
+        targetGroupLabel: createMessageDto.targetGroupLabel ?? null,
         ...(hasSurvey
           ? {
               survey: {

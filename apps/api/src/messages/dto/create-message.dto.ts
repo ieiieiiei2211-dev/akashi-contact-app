@@ -30,6 +30,10 @@ export class CreateMessageDto {
 
   @IsOptional()
   @IsString()
+  targetGroupLabel?: string;
+
+  @IsOptional()
+  @IsString()
   surveyQuestion?: string;
 
   @IsOptional()
