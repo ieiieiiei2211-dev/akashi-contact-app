@@ -64,6 +64,37 @@ type ReadStatusDetail = {
   unreadUsers: ReadStatusDetailUser[];
 };
 
+type SurveyStatusUser = {
+  id: number;
+  name: string;
+  email: string;
+  role: UserRole;
+  grade?: number | null;
+  department?: string | null;
+  answeredAt?: string;
+};
+
+type SurveyStatusSummaryItem = {
+  choiceId: number;
+  label: string;
+  count: number;
+  users: SurveyStatusUser[];
+};
+
+type SurveyStatusDetail = {
+  message: {
+    id: number;
+    title: string;
+    status: MessageStatus;
+  };
+  survey: {
+    id: number;
+    question: string;
+  };
+  totalAnswerCount: number;
+  summary: SurveyStatusSummaryItem[];
+};
+
 const roleLabels: Record<UserRole, string> = {
   STUDENT: '生徒',
   PARENT: '保護者',
@@ -113,6 +144,8 @@ function AdminPage() {
   const [loadingMessages, setLoadingMessages] = useState(true);
   const [loadingReadStatus, setLoadingReadStatus] = useState(false);
   const [readStatusDetail, setReadStatusDetail] = useState<ReadStatusDetail | null>(null);
+  const [loadingSurveyStatus, setLoadingSurveyStatus] = useState(false);
+  const [surveyStatusDetail, setSurveyStatusDetail] = useState<SurveyStatusDetail | null>(null);
 
   const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
@@ -508,6 +541,7 @@ function AdminPage() {
   async function handleShowSurveyStatus(message: Message) {
     setNotice("");
     setError("");
+    setLoadingSurveyStatus(true);
 
     try {
       const response = await fetch(`http://localhost:3000/messages/${message.id}/survey-status`);
@@ -516,36 +550,13 @@ function AdminPage() {
         throw new Error("Failed to load survey status.");
       }
 
-      const data = (await response.json()) as {
-        message: {
-          id: number;
-          title: string;
-          status: MessageStatus;
-        };
-        survey: {
-          id: number;
-          question: string;
-        };
-        totalAnswerCount: number;
-        summary: Array<{
-          choiceId: number;
-          label: string;
-          count: number;
-        }>;
-      };
-
-      const summaryText = data.summary
-        .map((item) => `・${item.label}: ${item.count}件`)
-        .join("\n");
-
-      window.alert(
-        `アンケート集計: ${data.message.title}\n\n` +
-          `質問: ${data.survey.question}\n` +
-          `回答数: ${data.totalAnswerCount}\n\n` +
-          summaryText,
-      );
+      const data: SurveyStatusDetail = await response.json();
+      setSurveyStatusDetail(data);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error occurred.");
+    } finally {
+      setLoadingSurveyStatus(false);
     }
   }
 
@@ -658,6 +669,80 @@ function AdminPage() {
 
       {notice && <p className="global-success">{notice}</p>}
       {error && <p className="global-error">{error}</p>}
+
+      {(loadingSurveyStatus || surveyStatusDetail) && (
+        <section className="card survey-detail-panel">
+          <div className="section-heading">
+            <div>
+              <h2>{"\u30a2\u30f3\u30b1\u30fc\u30c8\u96c6\u8a08"}</h2>
+              <p>
+                {surveyStatusDetail
+                  ? `\u9023\u7d61\u300c${surveyStatusDetail.message.title}\u300d\u306e\u96c6\u8a08\u7d50\u679c\u3067\u3059\u3002`
+                  : "\u30a2\u30f3\u30b1\u30fc\u30c8\u96c6\u8a08\u3092\u8aad\u307f\u8fbc\u3093\u3067\u3044\u307e\u3059\u3002"}
+              </p>
+            </div>
+
+            {surveyStatusDetail && (
+              <button
+                type="button"
+                className="secondary-button"
+                onClick={() => setSurveyStatusDetail(null)}
+              >
+                {"\u9589\u3058\u308b"}
+              </button>
+            )}
+          </div>
+
+          {loadingSurveyStatus && <p className="muted">{"\u8aad\u307f\u8fbc\u307f\u4e2d..."}</p>}
+
+          {surveyStatusDetail && !loadingSurveyStatus && (
+            <>
+              <div className="survey-detail-summary">
+                <div>
+                  <span>{"\u8cea\u554f"}</span>
+                  <strong>{surveyStatusDetail.survey.question}</strong>
+                </div>
+                <div>
+                  <span>{"\u56de\u7b54\u6570"}</span>
+                  <strong>{surveyStatusDetail.totalAnswerCount}</strong>
+                </div>
+              </div>
+
+              <div className="survey-result-list">
+                {surveyStatusDetail.summary.map((item) => (
+                  <section className="survey-result-card" key={item.choiceId}>
+                    <div className="survey-result-head">
+                      <h3>{item.label}</h3>
+                      <strong>{item.count}{"\u4ef6"}</strong>
+                    </div>
+
+                    {item.users.length > 0 ? (
+                      <ul>
+                        {item.users.map((user) => (
+                          <li key={`${item.choiceId}-${user.id}`}>
+                            <strong>{user.name}</strong>
+                            <span>{user.email}</span>
+                            <small>
+                              {roleLabels[user.role]} / {user.grade ? `${user.grade}\u5e74` : "\u5b66\u5e74\u672a\u6307\u5b9a"} / {user.department || "\u6240\u5c5e\u672a\u6307\u5b9a"}
+                            </small>
+                            {user.answeredAt && (
+                              <small>
+                                {"\u56de\u7b54\u65e5\u6642"}: {new Date(user.answeredAt).toLocaleString("ja-JP")}
+                              </small>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="muted">{"\u3053\u306e\u9078\u629e\u80a2\u3078\u306e\u56de\u7b54\u306f\u307e\u3060\u3042\u308a\u307e\u305b\u3093\u3002"}</p>
+                    )}
+                  </section>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
       <section className="card">
         <div className="section-heading">
