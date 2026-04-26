@@ -2,7 +2,7 @@
   let data = {
     title: "明石高専連絡ポータル",
     body: "新しい連絡があります。",
-    url: "/",
+    url: self.registration.scope,
   };
 
   if (event.data) {
@@ -13,13 +13,15 @@
     }
   }
 
+  const iconUrl = new URL("icons/icon-192.png", self.registration.scope).href;
+
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/vite.svg",
-      badge: "/vite.svg",
+      icon: iconUrl,
+      badge: iconUrl,
       data: {
-        url: data.url || "/",
+        url: data.url || self.registration.scope,
       },
     }),
   );
@@ -28,7 +30,7 @@
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const url = event.notification.data?.url || "/";
+  const url = event.notification.data?.url || self.registration.scope;
 
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
