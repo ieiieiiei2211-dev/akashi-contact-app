@@ -13,4 +13,4 @@ COPY . .
 
 RUN npx prisma generate && npm run build
 
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && npm run start:prod"]
+CMD ["npm", "run", "start:prod"]
