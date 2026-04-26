@@ -2,6 +2,6 @@
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  base: '/akashi-contact-app/',
+  base: '/',
   plugins: [react()],
 })
