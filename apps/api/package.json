@@ -6,8 +6,8 @@
     "private":  true,
     "license":  "UNLICENSED",
     "engines":  {
-                    "node":  "20",
-                    "npm":  "10"
+                    "node":  "\u003e=24.0.0",
+                    "npm":  "\u003e=10.0.0"
                 },
     "packageManager":  "npm@10.9.0",
     "scripts":  {
