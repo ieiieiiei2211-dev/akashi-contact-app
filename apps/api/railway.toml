@@ -1,4 +1,4 @@
-﻿[build]
+[build]
 builder = "NIXPACKS"
 buildCommand = "npm ci && npx prisma generate && npm run build"
 
